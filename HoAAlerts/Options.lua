@@ -3,7 +3,7 @@ local A = HoAAlerts
 
 local panel = CreateFrame("Frame", "HoAAlertsOptions", UIParent)
 panel:SetWidth(340)
-panel:SetHeight(440)
+panel:SetHeight(466)
 panel:SetPoint("CENTER", UIParent, "CENTER", 0, 40)
 panel:SetFrameStrata("DIALOG")
 panel:SetMovable(true)
@@ -94,6 +94,7 @@ local hows = {   -- key, label, column, row
     { "flash",   "Screen edge flash", 0, 1 },
     { "chat",    "Chat message",     1, 1 },
     { "tracker", "Tracker list (distance + direction)", 0, 2 },
+    { "groundFlash", "Red flash when a ground effect hits me", 0, 3 },
 }
 for _, how in ipairs(hows) do
     local key = how[1]
@@ -101,7 +102,8 @@ for _, how in ipairs(hows) do
         function() return HoAAlertsDB[key] end,
         function(on) HoAAlertsDB[key] = on; A.RefreshTracker() end)
 end
-y = y - 3 * 26
+SmallButton("Testground", "Test", 50, "TOPRIGHT", -24, y - 3 * 26 - 1, function() A.Test("ground") end)
+y = y - 4 * 26
 
 -- Range slider
 y = y - 28
@@ -157,11 +159,12 @@ local function Help()
     A.Print("v" .. A.VERSION .. " commands:")
     local lines = {
         "/hoaa - open the options window",
-        "/hoaa test [type] - show test warnings",
+        "/hoaa test [type] - show test warnings (type 'ground' for the hit flash)",
         "/hoaa unlock | lock - move the warning text and tracker",
         "/hoaa range <yards> - only warn within that distance (0 = any)",
         "/hoaa <type> - toggle a spawn type: leyline, greed, altar, elite, moonwell, valor",
         "/hoaa warning | sound | flash | chat | tracker - toggle an output",
+        "/hoaa ground - toggle the red flash when a ground effect hits you",
         "/hoaa reset - reset frame positions",
     }
     for _, line in ipairs(lines) do
@@ -186,7 +189,7 @@ SlashCmdList["HOAALERTS"] = function(msg)
     elseif command == "help" then
         Help()
     elseif command == "test" then
-        if rest ~= "" and not A.TYPE_BY_KEY[rest] then
+        if rest ~= "" and rest ~= "ground" and not A.TYPE_BY_KEY[rest] then
             A.Print("Unknown type '" .. rest .. "'.")
             return
         end
@@ -211,6 +214,9 @@ SlashCmdList["HOAALERTS"] = function(msg)
         HoAAlertsDB.types[command] = not HoAAlertsDB.types[command]
         A.Print(t.name .. " alerts " .. OnOff(HoAAlertsDB.types[command]))
         A.RefreshTracker()
+    elseif command == "ground" then
+        HoAAlertsDB.groundFlash = not HoAAlertsDB.groundFlash
+        A.Print("Ground-effect hit flash " .. OnOff(HoAAlertsDB.groundFlash))
     elseif OUTPUTS[command] then
         HoAAlertsDB[command] = not HoAAlertsDB[command]
         A.Print(command .. " " .. OnOff(HoAAlertsDB[command]))

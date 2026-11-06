@@ -51,6 +51,7 @@ local DEFAULTS = {
     flash = true,       -- colored glow around the screen edges
     chat = true,
     tracker = true,     -- small list of active spawns with distance and direction
+    groundFlash = true, -- red flash when a ground effect hits you
     range = 0,          -- only warn for spawns within this many yards (0 = any distance)
     holdTime = 4,       -- seconds a warning stays fully visible
     types = {},
@@ -272,28 +273,102 @@ flash.bottom = Edge("BOTTOMLEFT", "BOTTOMRIGHT", true)
 flash.left = Edge("TOPLEFT", "BOTTOMLEFT", false)
 flash.right = Edge("TOPRIGHT", "BOTTOMRIGHT", false)
 
-local FLASH_TIME = 1.2
 flash:SetScript("OnUpdate", function()
     local t = GetTime() - this.at
-    if t >= FLASH_TIME then
+    if t >= this.duration then
         this:Hide()
         return
     end
-    -- two pulses
-    local phase = math.mod(t, FLASH_TIME / 2) / (FLASH_TIME / 2)
+    local pulse = this.duration / this.pulses
+    local phase = math.mod(t, pulse) / pulse
     this:SetAlpha(Sin(phase * math.pi))
 end)
 
-local function Flash(color)
-    local r, g, b, a = color[1], color[2], color[3], 0.7
+-- color = {r, g, b}; spawn warnings pulse twice over 1.2 s, ground hits once.
+local function Flash(color, duration, pulses, strength)
+    local r, g, b, a = color[1], color[2], color[3], strength or 0.7
     flash.top:SetGradientAlpha("VERTICAL", r, g, b, 0, r, g, b, a)
     flash.bottom:SetGradientAlpha("VERTICAL", r, g, b, a, r, g, b, 0)
     flash.left:SetGradientAlpha("HORIZONTAL", r, g, b, a, r, g, b, 0)
     flash.right:SetGradientAlpha("HORIZONTAL", r, g, b, 0, r, g, b, a)
+    flash.color = color
+    flash.duration = duration or 1.2
+    flash.pulses = pulses or 2
     flash.at = GetTime()
     flash:SetAlpha(0)
     flash:Show()
 end
+A.Flash = Flash
+
+---------------------------------------------------------------------------
+-- Ground-effect hits
+--
+-- In Hordes of Azeroth every telegraphed ground effect (circles, cones,
+-- lines, rings, eruptions, bolt landing zones) hits you as a direct enemy
+-- spell hit, which the 1.12 combat log reports as "X's Y hits you for N."
+-- Enemy melee and damage-over-time use other messages, so a direct enemy
+-- spell hit means you were standing in something.
+---------------------------------------------------------------------------
+
+local GROUND_RED = { 1, 0.08, 0.05 }
+local GROUND_FLASH_TIME = 0.5
+local GROUND_COOLDOWN = 0.35     -- don't strobe when several effects land at once
+local lastGroundFlash = 0
+
+local function LinePattern(text)
+    if not text then
+        return nil
+    end
+    text = string.gsub(text, "([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
+    text = string.gsub(text, "%%%%s", ".+")
+    text = string.gsub(text, "%%%%d", "%%d+")
+    return "^" .. text     -- no end anchor: absorbed/resisted notes may follow
+end
+
+local GROUND_PATTERNS = {}
+for _, format in ipairs({ SPELLLOGOTHERSELF, SPELLLOGSCHOOLOTHERSELF, SPELLLOGCRITOTHERSELF, SPELLLOGCRITSCHOOLOTHERSELF }) do
+    local pattern = LinePattern(format)
+    if pattern then
+        table.insert(GROUND_PATTERNS, pattern)
+    end
+end
+if table.getn(GROUND_PATTERNS) == 0 then
+    -- English fallback if the client lacks the global format strings
+    GROUND_PATTERNS = { "^.+'s .+ hits you for %d+", "^.+'s .+ crits you for %d+" }
+end
+
+local function IsGroundHit(text)
+    if not text then
+        return false
+    end
+    for _, pattern in ipairs(GROUND_PATTERNS) do
+        if string.find(text, pattern) then
+            return true
+        end
+    end
+    return false
+end
+A.IsGroundHit = IsGroundHit
+
+local function GroundHit()
+    local now = GetTime()
+    if now - lastGroundFlash < GROUND_COOLDOWN then
+        return
+    end
+    lastGroundFlash = now
+    Flash(GROUND_RED, GROUND_FLASH_TIME, 1, 0.85)
+end
+A.GroundHit = GroundHit
+
+-- The client files a hit under different events depending on who the source
+-- is (a living enemy, or an invisible hazard left behind by a dead one).
+local GROUND_EVENTS = {
+    "CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE",
+    "CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE",
+    "CHAT_MSG_SPELL_PET_DAMAGE",
+    "CHAT_MSG_SPELL_PARTY_DAMAGE",
+    "CHAT_MSG_SPELL_FRIENDLYPLAYER_DAMAGE",
+}
 
 ---------------------------------------------------------------------------
 -- Tracker: active spawns with live distance and direction
@@ -574,6 +649,11 @@ end
 
 -- Fire one warning of each enabled type (or the given type) a short way off.
 function A.Test(key)
+    if key == "ground" then
+        lastGroundFlash = 0
+        GroundHit()
+        return
+    end
     local north, west, mapId = HeroPosition()
     north, west = north or 0, west or 0
     local i = 0
@@ -597,10 +677,19 @@ end
 local events = CreateFrame("Frame")
 events:RegisterEvent("VARIABLES_LOADED")
 events:RegisterEvent("CHAT_MSG_SYSTEM")
+local IS_GROUND_EVENT = {}
+for _, name in ipairs(GROUND_EVENTS) do
+    events:RegisterEvent(name)
+    IS_GROUND_EVENT[name] = true
+end
 events:SetScript("OnEvent", function()
     if event == "CHAT_MSG_SYSTEM" then
         if HoAAlertsDB then
             HandleLine(arg1)
+        end
+    elseif IS_GROUND_EVENT[event] then
+        if HoAAlertsDB and HoAAlertsDB.groundFlash and IsGroundHit(arg1) then
+            GroundHit()
         end
     elseif event == "VARIABLES_LOADED" then
         if type(HoAAlertsDB) ~= "table" then
