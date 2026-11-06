@@ -11,6 +11,7 @@ It warns you when one of these appears during a run:
 | **Elite Chest** (free chest) | on | Flag Taken |
 | Moonwell | off | Flag Taken |
 | Valor Chest (costs Valor) | off | Flag Taken |
+| **Wandering Merchant** arrives | on | Flag Taken |
 | **Stage Boss** arrives | on | Battleground Ready (`PVPTHROUGHQUEUE`) |
 
 Each warning can:
@@ -27,6 +28,9 @@ telegraphed circle, cone, line, ring, eruption or bolt landing zone in time. Tur
 When several spawns of the same type appear within 3 seconds of each other (an elite pack dying
 often drops a pile of chests), they merge into one warning that counts up, like `Elite Chest dropped!  x4`.
 Only the first one plays a sound, flashes and prints to chat.
+
+When the **Wandering Merchant** shows up you get `Wandering Merchant has arrived!` with distance and
+direction. He moves on after 60 seconds, so his tracker row also counts down the time left.
 
 When the **stage boss** spawns you get `<boss name> has arrived!` with distance and direction, at any
 range (the range filter doesn't apply), and the boss is pinned to the top of the tracker, where its
@@ -92,7 +96,7 @@ unticked as an example). The game draws its own checkboxes, buttons and fonts.*
 | `/hoaa test [type]` | Show test warnings |
 | `/hoaa unlock` / `/hoaa lock` | Move the warning text and the tracker |
 | `/hoaa range <yards>` | Only warn for spawns within that distance (`0` = any) |
-| `/hoaa leyline` / `greed` / `altar` / `elite` / `moonwell` / `valor` / `boss` | Turn one alert type on or off |
+| `/hoaa leyline` / `greed` / `altar` / `elite` / `moonwell` / `valor` / `merchant` / `boss` | Turn one alert type on or off |
 | `/hoaa warning` / `sound` / `flash` / `chat` / `tracker` | Turn one kind of output on or off |
 | `/hoaa sounds` | List the sounds and what each type plays |
 | `/hoaa sound <type> <number>` | Pick a sound for one type, e.g. `/hoaa sound elite 1` |

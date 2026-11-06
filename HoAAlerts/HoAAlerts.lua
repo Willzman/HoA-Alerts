@@ -47,6 +47,10 @@ A.TYPES = {
       verb = "spawned", color = { 0.75, 0.55, 1.00 }, sound = FLAG_TAKEN, default = false },
     { key = "valor", kind = "chest", icon = "INV_Box_02", name = "Valor Chest",
       verb = "spawned", color = { 0.85, 0.85, 0.85 }, sound = FLAG_TAKEN, default = false },
+    -- The Wandering Merchant: sells spells and upgrades for Valor and moves on
+    -- after 60 seconds (BonkRunVendor.cpp), so the tracker shows time left.
+    { key = "merchant", kind = "vendor", icon = "INV_Misc_Bag_10", name = "Wandering Merchant",
+      verb = "has arrived", color = { 0.95, 0.75, 0.45 }, sound = FLAG_TAKEN, default = true, timed = true },
     -- The stage boss: its pin follows the boss around, so it is matched by id
     -- only (not position), always warns whatever the range setting, and the
     -- warning uses the boss's own name: "Hogger has arrived!". It is pinned to
@@ -686,11 +690,15 @@ local function RefreshTracker()
             end
             row.icon:SetTexture(ICON_PATH .. spawn.type.icon)
             row.name:SetText(DisplayName(spawn))
+            local left = ""
+            if spawn.leavesAt then
+                left = " |cffffd100" .. math.max(0, math.ceil(spawn.leavesAt - GetTime())) .. "s|r"
+            end
             if spawn.yards then
                 local dir = spawn.direction == "here" and "here" or spawn.direction
-                row.value:SetText(math.floor(spawn.yards + 0.5) .. "y |cffa0a0a0" .. dir .. "|r")
+                row.value:SetText(math.floor(spawn.yards + 0.5) .. "y |cffa0a0a0" .. dir .. "|r" .. left)
             else
-                row.value:SetText("")
+                row.value:SetText(left)
             end
             DrawBar(row)
             row:Show()
@@ -828,11 +836,14 @@ function OnObjective(f)
         signature = signature .. "|" .. f[4] .. "|" .. f[5]
     end
     local spawn = active[id]
+    local seconds = tonumber(f[8] or "") or 0
+    local leavesAt = (t.timed and seconds > 0) and (GetTime() + seconds) or nil
     if spawn and spawn.signature == signature then
         spawn.x, spawn.y, spawn.mapId = x, y, mapId
+        spawn.leavesAt = leavesAt or spawn.leavesAt     -- resends refresh the clock
         return
     end
-    spawn = { id = id, type = t, x = x, y = y, mapId = mapId, label = f[7], signature = signature }
+    spawn = { id = id, type = t, x = x, y = y, mapId = mapId, label = f[7], signature = signature, leavesAt = leavesAt }
     active[id] = spawn
     if seen[signature] then
         return
