@@ -3,7 +3,7 @@
 A BigWigs/DBM-style warning addon for **[Hordes of Azeroth](https://github.com/jonhaldors/hordes-of-azeroth)**.
 It warns you when one of these appears during a run:
 
-| Alert | Default | Sound |
+| Alert | Default | Default sound |
 |---|---|---|
 | **Ley Line** | on | Raid warning |
 | **Greed Totem** | on | Coin sound |
@@ -15,7 +15,7 @@ It warns you when one of these appears during a run:
 Each warning can:
 
 - show **big text** between your hero and the action bar with the spawn's icon, distance and direction (`Ley Line spawned! (230 yd, NE)`)
-- play a **sound** (a different one per type, see the table above)
+- play a **sound**, a different one per type. You can pick another sound for each type in `/hoaa` (click the sound button to go to the next one, right-click to go back; each click plays it) or with `/hoaa sound <type> <number>`. Choices: Raid Warning, Ready Check, Coins, Quest Complete, Objective Done, Level Up, Map Ping, Party Invite, Quest Failed, or No Sound. Sounds follow the game's Sound Effects volume.
 - **flash the screen edges** in the spawn's color
 - print a **chat message**
 - add the spawn to a small **tracker list**, styled like the game's damage meter, that shows every active spawn, nearest first, with live distance and compass direction (N, NE, E, ...; north is up on the map). Each row's bar fills as you get closer (full when you're on it, empty at 400+ yards)
@@ -52,6 +52,8 @@ closest to the action bar. Use `/hoaa unlock` to drag them somewhere else.
 | `/hoaa range <yards>` | Only warn for spawns within that distance (`0` = any) |
 | `/hoaa leyline` / `greed` / `altar` / `elite` / `moonwell` / `valor` | Turn one alert type on or off |
 | `/hoaa warning` / `sound` / `flash` / `chat` / `tracker` | Turn one kind of output on or off |
+| `/hoaa sounds` | List the sounds and what each type plays |
+| `/hoaa sound <type> <number>` | Pick a sound for one type, e.g. `/hoaa sound elite 1` |
 | `/hoaa ground` | Turn the red ground-effect hit flash on or off (`/hoaa test ground` to preview) |
 | `/hoaa reset` | Reset frame positions |
 

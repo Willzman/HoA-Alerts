@@ -49,6 +49,46 @@ for _, t in ipairs(A.TYPES) do
 end
 A.TYPE_BY_KEY = TYPE_BY_KEY
 
+-- Sounds you can pick per alert type. All are game sounds the Hordes of
+-- Azeroth addon itself plays, so they exist in this client. They use the
+-- game's Sound Effects volume.
+A.SOUNDS = {
+    { id = "RaidWarning",         name = "Raid Warning" },
+    { id = "ReadyCheck",          name = "Ready Check" },
+    { id = "LOOTWINDOWCOINSOUND", name = "Coins" },
+    { id = "QUESTCOMPLETED",      name = "Quest Complete" },
+    { id = "igQuestListComplete", name = "Objective Done" },
+    { id = "LEVELUP",             name = "Level Up" },
+    { id = "MapPing",             name = "Map Ping" },
+    { id = "igPlayerInvite",      name = "Party Invite" },
+    { id = "igQuestFailed",       name = "Quest Failed" },
+    { id = "none",                name = "No Sound" },
+}
+
+function A.SoundIndex(id)
+    for i, sound in ipairs(A.SOUNDS) do
+        if sound.id == id then
+            return i
+        end
+    end
+end
+
+function A.SoundName(id)
+    local i = A.SoundIndex(id)
+    return i and A.SOUNDS[i].name or id
+end
+
+function A.SoundFor(key)
+    local db = HoAAlertsDB
+    return (db and db.sounds and db.sounds[key]) or TYPE_BY_KEY[key].sound
+end
+
+function A.PlayAlertSound(id)
+    if id and id ~= "none" then
+        PlaySound(id)
+    end
+end
+
 local DEFAULTS = {
     warning = true,     -- big text just above the action bar
     sound = true,
@@ -59,9 +99,11 @@ local DEFAULTS = {
     range = 0,          -- only warn for spawns within this many yards (0 = any distance)
     holdTime = 4,       -- seconds a warning stays fully visible
     types = {},
+    sounds = {},        -- per-type sound id (see A.SOUNDS)
 }
 for _, t in ipairs(A.TYPES) do
     DEFAULTS.types[t.key] = t.default
+    DEFAULTS.sounds[t.key] = t.sound
 end
 
 local function CopyDefaults(source, target)
@@ -678,7 +720,7 @@ local function Alert(spawn, test)
         Print(Hex(t.color) .. t.name .. " " .. t.verb .. "!|r" .. (where and (" " .. where) or ""))
     end
     if db.sound then
-        PlaySound(t.sound)
+        A.PlayAlertSound(A.SoundFor(t.key))
     end
     if db.flash then
         Flash(t.color)

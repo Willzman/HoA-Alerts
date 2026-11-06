@@ -2,7 +2,7 @@
 local A = HoAAlerts
 
 local panel = CreateFrame("Frame", "HoAAlertsOptions", UIParent)
-panel:SetWidth(340)
+panel:SetWidth(390)
 panel:SetHeight(466)
 panel:SetPoint("CENTER", UIParent, "CENTER", 0, 40)
 panel:SetFrameStrata("DIALOG")
@@ -71,8 +71,12 @@ local function SmallButton(name, label, width, point, x, y, onClick)
     return button
 end
 
--- Spawn types, each with a little "test" button
+-- Spawn types, each with a sound picker and a little "test" button
+local soundPickers = {}
 Header("Warn me about", -48)
+local soundHeader = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+soundHeader:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -78 - 30, -48)
+soundHeader:SetText("Sound")
 local y = -68
 for _, t in ipairs(A.TYPES) do
     local key = t.key
@@ -80,6 +84,25 @@ for _, t in ipairs(A.TYPES) do
         function() return HoAAlertsDB.types[key] end,
         function(on) HoAAlertsDB.types[key] = on; A.RefreshTracker() end,
         t.icon)
+    -- sound picker: left-click for the next sound, right-click for the previous;
+    -- each click plays the newly picked sound
+    local picker = SmallButton("Sound" .. key, "", 120, "TOPRIGHT", -78, y - 1, function()
+        local i = A.SoundIndex(A.SoundFor(key)) or 0
+        local n = table.getn(A.SOUNDS)
+        if arg1 == "RightButton" then
+            i = i - 1
+            if i < 1 then i = n end
+        else
+            i = i + 1
+            if i > n then i = 1 end
+        end
+        HoAAlertsDB.sounds[key] = A.SOUNDS[i].id
+        this:SetText(A.SOUNDS[i].name)
+        A.PlayAlertSound(A.SOUNDS[i].id)
+    end)
+    picker:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    picker.key = key
+    table.insert(soundPickers, picker)
     SmallButton("Test" .. key, "Test", 50, "TOPRIGHT", -24, y - 1, function() A.Test(key) end)
     y = y - 26
 end
@@ -139,6 +162,9 @@ SmallButton("Reset", "Reset", 70, "BOTTOMRIGHT", -22, 18, function()
 end)
 
 panel:SetScript("OnShow", function()
+    for _, picker in ipairs(soundPickers) do
+        picker:SetText(A.SoundName(A.SoundFor(picker.key)))
+    end
     for _, check in ipairs(checks) do
         check:SetChecked(check.get() and 1 or nil)
     end
@@ -165,6 +191,7 @@ local function Help()
         "/hoaa <type> - toggle a spawn type: leyline, greed, altar, elite, moonwell, valor",
         "/hoaa warning | sound | flash | chat | tracker - toggle an output",
         "/hoaa ground - toggle the red flash when a ground effect hits you",
+        "/hoaa sounds - list sounds; /hoaa sound <type> <number> - pick one",
         "/hoaa reset - reset frame positions",
     }
     for _, line in ipairs(lines) do
@@ -214,6 +241,29 @@ SlashCmdList["HOAALERTS"] = function(msg)
         HoAAlertsDB.types[command] = not HoAAlertsDB.types[command]
         A.Print(t.name .. " alerts " .. OnOff(HoAAlertsDB.types[command]))
         A.RefreshTracker()
+    elseif command == "sounds" then
+        A.Print("Sounds (use /hoaa sound <type> <number>):")
+        for i, sound in ipairs(A.SOUNDS) do
+            DEFAULT_CHAT_FRAME:AddMessage("  |cffffff00" .. i .. "|r  " .. sound.name)
+        end
+        for _, t in ipairs(A.TYPES) do
+            DEFAULT_CHAT_FRAME:AddMessage("  " .. t.name .. ": |cffffff00" .. A.SoundName(A.SoundFor(t.key)) .. "|r")
+        end
+    elseif command == "sound" and rest ~= "" then
+        local _, _, key, number = string.find(rest, "^(%S+)%s*(%d*)$")
+        local t = key and A.TYPE_BY_KEY[key]
+        local sound = t and A.SOUNDS[tonumber(number or "") or 0]
+        if not sound then
+            A.Print("Usage: /hoaa sound <type> <number>. Type /hoaa sounds for the list.")
+            return
+        end
+        HoAAlertsDB.sounds[key] = sound.id
+        A.PlayAlertSound(sound.id)
+        A.Print(t.name .. " now plays |cffffff00" .. sound.name .. "|r.")
+        if panel:IsShown() then
+            panel:Hide()
+            panel:Show()
+        end
     elseif command == "ground" then
         HoAAlertsDB.groundFlash = not HoAAlertsDB.groundFlash
         A.Print("Ground-effect hit flash " .. OnOff(HoAAlertsDB.groundFlash))
