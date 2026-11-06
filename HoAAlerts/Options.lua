@@ -1,3 +1,5 @@
+-- Copyright (C) 2026 willzman
+-- SPDX-License-Identifier: GPL-3.0-only
 -- HoA Alerts options window and slash commands.
 local A = HoAAlerts
 

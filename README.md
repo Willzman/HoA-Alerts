@@ -118,6 +118,13 @@ a third of a second give one flash.
 
 ## License
 
-[MIT](LICENSE). This covers the addon code and the sounds in `HoAAlerts/Sounds`, which were generated
-from scratch by `tools/make_sounds.py`. Game sounds picked by name come from your own game data and
-aren't part of this repository.
+Copyright (C) 2026 willzman
+
+HoA Alerts is free software: you can redistribute it and/or modify it under the terms of the
+[GNU General Public License version 3](LICENSE) as published by the Free Software Foundation.
+It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the license for details.
+
+This covers the addon code and the sounds in `HoAAlerts/Sounds`, which were generated from scratch
+by `tools/make_sounds.py`. Game sounds picked by name come from your own game data and aren't part
+of this repository.

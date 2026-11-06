@@ -1,7 +1,9 @@
+# Copyright (C) 2026 willzman
+# SPDX-License-Identifier: GPL-3.0-only
 """Generate HoA Alerts' own alert sounds.
 
 These are synthesized from scratch (no recordings or samples), so they are
-original to this project and covered by its MIT license (see LICENSE).
+original to this project and covered by its GPL-3.0 license (see LICENSE).
 Run from the repository root:
 
     python3 tools/make_sounds.py

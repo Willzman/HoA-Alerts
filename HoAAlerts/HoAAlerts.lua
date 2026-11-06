@@ -1,3 +1,5 @@
+-- Copyright (C) 2026 willzman
+-- SPDX-License-Identifier: GPL-3.0-only
 -- HoA Alerts: boss-mod style spawn warnings for Hordes of Azeroth.
 --
 -- The Hordes of Azeroth server talks to its client addon through system chat
