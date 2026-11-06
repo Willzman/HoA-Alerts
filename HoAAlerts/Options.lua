@@ -5,7 +5,7 @@ local A = HoAAlerts
 
 local panel = CreateFrame("Frame", "HoAAlertsOptions", UIParent)
 panel:SetWidth(390)
-panel:SetHeight(492)
+panel:SetHeight(518)
 panel:SetPoint("CENTER", UIParent, "CENTER", 0, 40)
 panel:SetFrameStrata("DIALOG")
 panel:SetMovable(true)
@@ -192,7 +192,7 @@ local function Help()
         "/hoaa test [type] - show test warnings ('ground' = hit flash, 'countdown' = boss countdown)",
         "/hoaa unlock | lock - move the warning text and tracker",
         "/hoaa range <yards> - only warn within that distance (0 = any)",
-        "/hoaa <type> - toggle a spawn type: leyline, greed, altar, elite, moonwell, valor",
+        "/hoaa <type> - toggle an alert type: leyline, greed, altar, elite, moonwell, valor, boss",
         "/hoaa warning | sound | flash | chat | tracker - toggle an output",
         "/hoaa ground - toggle the red flash when a ground effect hits you",
         "/hoaa countdown - toggle the 10-to-1 voice countdown before the stage boss",

@@ -47,7 +47,18 @@ A.TYPES = {
       verb = "spawned", color = { 0.75, 0.55, 1.00 }, sound = FLAG_TAKEN, default = false },
     { key = "valor", kind = "chest", icon = "INV_Box_02", name = "Valor Chest",
       verb = "spawned", color = { 0.85, 0.85, 0.85 }, sound = FLAG_TAKEN, default = false },
+    -- The stage boss: its pin follows the boss around, so it is matched by id
+    -- only (not position), always warns whatever the range setting, and the
+    -- warning uses the boss's own name: "Hogger has arrived!". It is pinned to
+    -- the top of the tracker.
+    { key = "boss", kind = "boss", icon = "INV_Misc_Bone_HumanSkull_01", name = "Stage Boss",
+      verb = "has arrived", color = { 1.00, 0.30, 0.20 }, sound = "PVPTHROUGHQUEUE", default = true,
+      moves = true, anyRange = true, useLabel = true, pinned = true },
 }
+
+-- Alert types that existed before settings version 2 (see the migration in
+-- VARIABLES_LOADED); types added later keep their own default sound.
+local V1_TYPES = { leyline = true, greed = true, altar = true, elite = true, moonwell = true, valor = true }
 
 local TYPE_BY_KEY, TYPE_BY_SIGNATURE = {}, {}
 for _, t in ipairs(A.TYPES) do
@@ -68,6 +79,7 @@ local SOUND_DIR = "Interface\\AddOns\\HoAAlerts\\Sounds\\"
 A.SOUND_DIR = SOUND_DIR
 A.SOUNDS = {
     { id = "PVPFlagTaken.Mono",     name = "Flag Taken" },
+    { id = "PVPTHROUGHQUEUE",       name = "Battleground Ready" },
     { id = "RaidWarning",           name = "Raid Warning" },
     { id = "ReadyCheck",            name = "Ready Check" },
     { id = "LOOTWINDOWCOINSOUND",   name = "Coins" },
@@ -231,6 +243,17 @@ local function Where(spawn)
     return yards, Compass(dn, -dw)
 end
 A.Where = Where
+
+-- The name shown for a spawn: the server's label for types that use it
+-- (the boss's own name), otherwise the type name.
+local function DisplayName(spawn)
+    local t = spawn.type
+    if t.useLabel and spawn.label and spawn.label ~= "" then
+        return spawn.label
+    end
+    return t.name
+end
+A.DisplayName = DisplayName
 
 local function WhereText(spawn)
     local yards, direction = Where(spawn)
@@ -623,7 +646,12 @@ local function SortedSpawns()
         spawn.yards, spawn.direction = Where(spawn)
         table.insert(list, spawn)
     end
+    -- the stage boss always gets the top row; everything else nearest first
     table.sort(list, function(a, b)
+        local pa, pb = a.type.pinned and 1 or 0, b.type.pinned and 1 or 0
+        if pa ~= pb then
+            return pa > pb
+        end
         return (a.yards or 99999) < (b.yards or 99999)
     end)
     return list
@@ -654,7 +682,7 @@ local function RefreshTracker()
                 row.level = row.goal
             end
             row.icon:SetTexture(ICON_PATH .. spawn.type.icon)
-            row.name:SetText(spawn.type.name)
+            row.name:SetText(DisplayName(spawn))
             if spawn.yards then
                 local dir = spawn.direction == "here" and "here" or spawn.direction
                 row.value:SetText(math.floor(spawn.yards + 0.5) .. "y |cffa0a0a0" .. dir .. "|r")
@@ -713,8 +741,8 @@ local BURST_WINDOW = 3
 local POP_TIME = 0.25
 local bursts = {}   -- type key -> { at, count, where, message }
 
-local function WarningText(t, count, where)
-    return t.name .. " " .. t.verb .. "!" .. (count > 1 and ("  x" .. count) or "") ..
+local function WarningText(name, t, count, where)
+    return name .. " " .. t.verb .. "!" .. (count > 1 and ("  x" .. count) or "") ..
         (where and ("  |cffffffff(" .. where .. ")|r") or "")
 end
 
@@ -725,7 +753,7 @@ local function Alert(spawn, test)
         if not db.types[t.key] then
             return
         end
-        if db.range and db.range > 0 then
+        if db.range and db.range > 0 and not t.anyRange then
             local yards = Where(spawn)
             if yards and yards > db.range then
                 return
@@ -741,23 +769,23 @@ local function Alert(spawn, test)
         burst.count = burst.count + 1
         if db.warning then
             if burst.message and IsShowing(burst.message) then
-                burst.message.text = WarningText(t, burst.count, burst.where)
+                burst.message.text = WarningText(burst.name, t, burst.count, burst.where)
                 burst.message.at = now - POP_TIME      -- stay up longer, without popping again
                 RenderWarnings()
             else
-                burst.message = ShowWarning(WarningText(t, burst.count, burst.where), ICON_PATH .. t.icon, t.color)
+                burst.message = ShowWarning(WarningText(burst.name, t, burst.count, burst.where), ICON_PATH .. t.icon, t.color)
             end
         end
         return
     end
 
-    burst = { at = now, count = 1, where = where }
+    burst = { at = now, count = 1, where = where, name = DisplayName(spawn) }
     bursts[t.key] = burst
     if db.warning then
-        burst.message = ShowWarning(WarningText(t, 1, where), ICON_PATH .. t.icon, t.color)
+        burst.message = ShowWarning(WarningText(burst.name, t, 1, where), ICON_PATH .. t.icon, t.color)
     end
     if db.chat then
-        Print(Hex(t.color) .. t.name .. " " .. t.verb .. "!|r" .. (where and (" " .. where) or ""))
+        Print(Hex(t.color) .. burst.name .. " " .. t.verb .. "!|r" .. (where and (" " .. where) or ""))
     end
     if db.sound then
         A.PlayAlertSound(A.SoundFor(t.key))
@@ -789,10 +817,16 @@ function OnObjective(f)
     if not t then
         return
     end
-    -- Ids restart with every run, so include the type and exact spot.
-    local signature = id .. "|" .. icon .. "|" .. f[4] .. "|" .. f[5]
+    -- Ids restart with every run, so include the type and exact spot -- except
+    -- for pins that follow a moving target, which are the same spawn wherever
+    -- they are.
+    local signature = id .. "|" .. icon
+    if not t.moves then
+        signature = signature .. "|" .. f[4] .. "|" .. f[5]
+    end
     local spawn = active[id]
     if spawn and spawn.signature == signature then
+        spawn.x, spawn.y, spawn.mapId = x, y, mapId
         return
     end
     spawn = { id = id, type = t, x = x, y = y, mapId = mapId, label = f[7], signature = signature }
@@ -1104,7 +1138,9 @@ events:SetScript("OnEvent", function()
         -- Settings version 2: every alert type switched to the flag-taken sound.
         if (HoAAlertsDB.settingsVersion or 1) < 2 then
             for _, t in ipairs(A.TYPES) do
-                HoAAlertsDB.sounds[t.key] = FLAG_TAKEN
+                if V1_TYPES[t.key] then
+                    HoAAlertsDB.sounds[t.key] = FLAG_TAKEN
+                end
             end
             HoAAlertsDB.settingsVersion = 2
         end
