@@ -20,6 +20,12 @@ Each warning can:
 - print a **chat message**
 - add the spawn to a small **tracker list** that shows every active spawn, nearest first, with live distance and compass direction (N, NE, E, ...; north is up on the map)
 
+Warnings pop in, stay for 4 seconds, then fade out over 1 second. Up to three stack, newest on top.
+
+![Mockup of HoA Alerts: three stacked spawn warnings at the top of the screen, a green screen-edge flash, and the tracker list on the right](docs/preview.png)
+
+*Mockup of the layout, not an in-game screenshot. Type `/hoaa test` in game to see the real thing.*
+
 ## Install
 
 1. Download this repository and copy the `HoAAlerts` folder into the game's AddOns folder.
