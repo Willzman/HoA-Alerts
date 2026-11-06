@@ -135,6 +135,7 @@ local DEFAULTS = {
     chat = true,
     tracker = true,     -- small list of active spawns with distance and direction
     groundFlash = true, -- red flash when a ground effect hits you
+    bossCountdown = true, -- spoken 10..1 before the stage boss arrives
     range = 0,          -- only warn for spawns within this many yards (0 = any distance)
     holdTime = 4,       -- seconds a warning stays fully visible
     types = {},
@@ -767,7 +768,18 @@ local function Alert(spawn, test)
 end
 A.Alert = Alert
 
-local function OnObjective(f)
+-- Stage clock for the boss countdown (see "Stage boss countdown" below).
+local stage = { duration = 0, elapsed = 0, at = 0, finale = false, bossUp = false, paused = false, running = false }
+
+local OnObjective
+local function OnObjectiveOrBoss(f)
+    if f[3] == "boss" then
+        stage.bossUp = true
+    end
+    OnObjective(f)
+end
+
+function OnObjective(f)
     local id, kind, icon = f[2], f[3] or "", f[9] or ""
     local x, y, mapId = tonumber(f[4] or ""), tonumber(f[5] or ""), tonumber(f[6] or "")
     if not id or not x or not y then
@@ -799,7 +811,7 @@ local handlers = {}
 
 -- BONK~objective~id~kind~x~y~mapId~label~seconds~icon~description
 -- (fields are numbered from the word after "BONK~", so the icon is f[9])
-handlers["objective"] = OnObjective
+handlers["objective"] = OnObjectiveOrBoss
 
 handlers["objectiveclear"] = function(f)
     if f[2] and f[2] ~= "" then
@@ -819,11 +831,106 @@ end
 -- "start" arrives at the beginning of a run and also before the server
 -- replays the whole run state (e.g. after /reload). Pins replayed right
 -- after it are already known, so record them without warning.
-handlers["start"] = function()
+---------------------------------------------------------------------------
+-- Stage boss countdown: a voice counts 10..1 before the stage boss spawns.
+--
+-- The server spawns the stage boss when the run's elapsed seconds reach the
+-- stage length (not in Finale stages). "start" carries the stage length and
+-- the Finale flag; "state" (once a second) carries elapsed seconds, the
+-- length and whether the boss is up; "paused~1/0" freezes the clock.
+-- Elapsed is whole seconds, so the true time is somewhere in the next
+-- second: assume the middle and run a local clock between updates.
+---------------------------------------------------------------------------
+
+local COUNTDOWN_FROM = 10
+local COUNTDOWN_DIR = SOUND_DIR .. "Amy\\"
+local STATE_GAP = 1.2           -- stop extrapolating if updates stop (pause, lag)
+local BOSS_ICON = "INV_Misc_Bone_HumanSkull_01"
+local BOSS_COLOR = { 1, 0.3, 0.2 }
+
+local spoken                    -- last number said
+local testEnd                   -- GetTime() a test countdown reaches 0
+
+local function Remaining()
+    if testEnd then
+        return testEnd - GetTime()
+    end
+    if not stage.running or stage.finale or stage.bossUp or stage.duration <= 0 then
+        return nil
+    end
+    local since = stage.paused and 0 or math.min(GetTime() - stage.at, STATE_GAP)
+    return stage.duration - (stage.elapsed + 0.5 + since)
+end
+
+local countdown = CreateFrame("Frame")
+countdown:SetScript("OnUpdate", function()
+    local db = HoAAlertsDB
+    local remaining = Remaining()
+    if not remaining or not db then
+        return
+    end
+    if testEnd and remaining <= 0 then
+        testEnd, spoken = nil, nil
+        return
+    end
+    local n = math.ceil(remaining)
+    if n > COUNTDOWN_FROM then
+        spoken = nil
+        return
+    end
+    if n < 1 or (spoken and n >= spoken) then
+        return
+    end
+    spoken = n
+    if not (db.bossCountdown or testEnd) then
+        return
+    end
+    if db.sound then
+        PlaySoundFile(COUNTDOWN_DIR .. n .. ".wav")
+    end
+    if n == COUNTDOWN_FROM and db.warning then
+        ShowWarning("Stage boss in " .. COUNTDOWN_FROM .. " seconds!", ICON_PATH .. BOSS_ICON, BOSS_COLOR)
+    end
+end)
+
+function A.TestCountdown()
+    spoken = nil
+    testEnd = GetTime() + COUNTDOWN_FROM + 0.05
+end
+
+function A.CountdownRemaining()
+    return Remaining()
+end
+
+handlers["start"] = function(f)
     quietUntil = GetTime() + QUIET_AFTER_START
+    stage.duration = tonumber(f[4] or "") or 0
+    stage.finale = f[11] == "1"
+    stage.elapsed, stage.at = 0, GetTime()
+    stage.bossUp, stage.paused, stage.running = false, false, true
+    spoken = nil
+end
+
+handlers["state"] = function(f)
+    stage.elapsed = tonumber(f[2] or "") or stage.elapsed
+    stage.duration = tonumber(f[3] or "") or stage.duration
+    stage.bossUp = stage.bossUp or f[7] == "1"   -- stays up until the next "start"
+    stage.at = GetTime()
+    stage.running = true
+end
+
+handlers["paused"] = function(f)
+    if stage.running and not stage.paused then
+        -- bank the time that passed since the last update
+        stage.elapsed = stage.elapsed + math.min(GetTime() - stage.at, STATE_GAP)
+    end
+    stage.paused = f[2] == "1"
+    stage.at = GetTime()
 end
 
 handlers["end"] = function()
+    stage.running = false
+    spoken = nil
     for k in pairs(active) do
         active[k] = nil
     end

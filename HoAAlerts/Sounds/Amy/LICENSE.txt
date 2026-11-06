@@ -1,0 +1,21 @@
+The files in this folder (1.wav to 10.wav) are NOT covered by HoA Alerts'
+GPL-3.0 license. They are a separate work shipped alongside it under:
+
+  Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
+  https://creativecommons.org/licenses/by-nc/4.0/
+
+You may share and adapt them for NON-COMMERCIAL purposes only, with credit.
+If you want to use HoA Alerts commercially, delete this folder first.
+
+Credits
+  Voice:          Amy-G
+  Recording:      Corsica_S
+  Edited version: Timbre, "Corsica_S countdown (Timbre's best version (in 2009))"
+                  https://freesound.org/people/Timbre/sounds/83033/
+  Cut into one file per number by the Deadly Boss Mods team (their "Corsica"
+  countdown voice, DBM-Core/sounds/Corsica).
+
+Changes made for HoA Alerts
+  Converted from Ogg Vorbis to 16-bit mono 22.05 kHz WAV (the format the
+  Hordes of Azeroth client plays) and loudness-normalized so every number
+  is equally loud. No other changes.

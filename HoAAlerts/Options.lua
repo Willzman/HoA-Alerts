@@ -5,7 +5,7 @@ local A = HoAAlerts
 
 local panel = CreateFrame("Frame", "HoAAlertsOptions", UIParent)
 panel:SetWidth(390)
-panel:SetHeight(466)
+panel:SetHeight(492)
 panel:SetPoint("CENTER", UIParent, "CENTER", 0, 40)
 panel:SetFrameStrata("DIALOG")
 panel:SetMovable(true)
@@ -120,6 +120,7 @@ local hows = {   -- key, label, column, row
     { "chat",    "Chat message",     1, 1 },
     { "tracker", "Tracker list (distance + direction)", 0, 2 },
     { "groundFlash", "Red flash when a ground effect hits me", 0, 3 },
+    { "bossCountdown", "Voice countdown (10 to 1) before the stage boss", 0, 4 },
 }
 for _, how in ipairs(hows) do
     local key = how[1]
@@ -128,7 +129,8 @@ for _, how in ipairs(hows) do
         function(on) HoAAlertsDB[key] = on; A.RefreshTracker() end)
 end
 SmallButton("Testground", "Test", 50, "TOPRIGHT", -24, y - 3 * 26 - 1, function() A.Test("ground") end)
-y = y - 4 * 26
+SmallButton("Testcountdown", "Test", 50, "TOPRIGHT", -24, y - 4 * 26 - 1, function() A.TestCountdown() end)
+y = y - 5 * 26
 
 -- Range slider
 y = y - 28
@@ -187,12 +189,13 @@ local function Help()
     A.Print("v" .. A.VERSION .. " commands:")
     local lines = {
         "/hoaa - open the options window",
-        "/hoaa test [type] - show test warnings (type 'ground' for the hit flash)",
+        "/hoaa test [type] - show test warnings ('ground' = hit flash, 'countdown' = boss countdown)",
         "/hoaa unlock | lock - move the warning text and tracker",
         "/hoaa range <yards> - only warn within that distance (0 = any)",
         "/hoaa <type> - toggle a spawn type: leyline, greed, altar, elite, moonwell, valor",
         "/hoaa warning | sound | flash | chat | tracker - toggle an output",
         "/hoaa ground - toggle the red flash when a ground effect hits you",
+        "/hoaa countdown - toggle the 10-to-1 voice countdown before the stage boss",
         "/hoaa sounds - list sounds; /hoaa sound <type> <number> - pick one",
         "/hoaa soundfile <type> <file.wav|file.mp3> - play your own file from HoAAlerts\\Sounds",
         "/hoaa reset - reset frame positions",
@@ -220,6 +223,10 @@ SlashCmdList["HOAALERTS"] = function(msg)
     elseif command == "help" then
         Help()
     elseif command == "test" then
+        if rest == "countdown" then
+            A.TestCountdown()
+            return
+        end
         if rest ~= "" and rest ~= "ground" and not A.TYPE_BY_KEY[rest] then
             A.Print("Unknown type '" .. rest .. "'.")
             return
@@ -285,6 +292,9 @@ SlashCmdList["HOAALERTS"] = function(msg)
             panel:Hide()
             panel:Show()
         end
+    elseif command == "countdown" then
+        HoAAlertsDB.bossCountdown = not HoAAlertsDB.bossCountdown
+        A.Print("Stage boss voice countdown " .. OnOff(HoAAlertsDB.bossCountdown))
     elseif command == "ground" then
         HoAAlertsDB.groundFlash = not HoAAlertsDB.groundFlash
         A.Print("Ground-effect hit flash " .. OnOff(HoAAlertsDB.groundFlash))

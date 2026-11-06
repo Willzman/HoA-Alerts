@@ -27,6 +27,12 @@ When several spawns of the same type appear within 3 seconds of each other (an e
 often drops a pile of chests), they merge into one warning that counts up, like `Elite Chest dropped!  x4`.
 Only the first one plays a sound, flashes and prints to chat.
 
+Before each **stage boss**, a voice counts down **10, 9, … 1** so you know exactly when it arrives,
+with a "Stage boss in 10 seconds!" warning at 10. It follows the run timer, holds when the game is
+paused, stops early if the boss is summoned early, and is skipped in Finale stages. Turn it off with
+`/hoaa countdown`, or hear it with `/hoaa test countdown`. The voice is "Amy", the countdown BigWigs and
+DBM also use (DBM calls it "Corsica"); see [License](#license).
+
 Warnings pop in, stay for 4 seconds, then fade out over 1 second. Up to three stack, with the newest
 closest to the action bar. Use `/hoaa unlock` to drag them somewhere else.
 
@@ -71,6 +77,7 @@ All sounds follow the game's Sound Effects volume.
 | `/hoaa sounds` | List the sounds and what each type plays |
 | `/hoaa sound <type> <number>` | Pick a sound for one type, e.g. `/hoaa sound elite 1` |
 | `/hoaa soundfile <type> <file>` | Play your own WAV/MP3 from `HoAAlerts/Sounds` for one type |
+| `/hoaa countdown` | Turn the stage boss voice countdown on or off (`/hoaa test countdown` to hear it) |
 | `/hoaa ground` | Turn the red ground-effect hit flash on or off (`/hoaa test ground` to preview) |
 | `/hoaa reset` | Reset frame positions |
 
@@ -125,6 +132,13 @@ HoA Alerts is free software: you can redistribute it and/or modify it under the 
 It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
 implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the license for details.
 
-This covers the addon code and the sounds in `HoAAlerts/Sounds`, which were generated from scratch
-by `tools/make_sounds.py`. Game sounds picked by name come from your own game data and aren't part
-of this repository.
+This covers the addon code and the sounds directly in `HoAAlerts/Sounds`, which were generated from
+scratch by `tools/make_sounds.py`. Game sounds picked by name come from your own game data and aren't
+part of this repository.
+
+**Exception: `HoAAlerts/Sounds/Amy/`** (the countdown voice) is a separate work, not covered by the GPL.
+It's licensed [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/): voice by Amy-G, recorded
+by Corsica_S, edited by Timbre ([freesound #83033](https://freesound.org/people/Timbre/sounds/83033/)),
+cut into numbers by the Deadly Boss Mods team, converted to WAV for HoA Alerts. It may not be used
+commercially; delete that folder to use HoA Alerts commercially. Full credits are in
+`HoAAlerts/Sounds/Amy/LICENSE.txt`.
