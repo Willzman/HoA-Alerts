@@ -18,7 +18,7 @@ Each warning can:
 - play a **sound**
 - **flash the screen edges** in the spawn's color
 - print a **chat message**
-- add the spawn to a small **tracker list** that shows every active spawn, nearest first, with live distance and compass direction (N, NE, E, ...; north is up on the map)
+- add the spawn to a small **tracker list**, styled like the game's damage meter, that shows every active spawn, nearest first, with live distance and compass direction (N, NE, E, ...; north is up on the map). Each row's bar fills as you get closer (full when you're on it, empty at 400+ yards)
 
 It also **flashes the screen edges red when a ground effect hits you**, meaning you didn't get out of a
 telegraphed circle, cone, line, ring, eruption or bolt landing zone in time. Turn it off with `/hoaa ground`.

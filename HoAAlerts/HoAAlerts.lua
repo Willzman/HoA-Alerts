@@ -371,49 +371,143 @@ local GROUND_EVENTS = {
 }
 
 ---------------------------------------------------------------------------
--- Tracker: active spawns with live distance and direction
+-- Tracker: active spawns with live distance and direction.
+-- Styled like the Hordes of Azeroth damage meter: flat dark panel with a
+-- gold-brown border, gradient header, and 20 px rows with a framed icon and
+-- a shaded bar. Here the bar shows closeness: full when you are on top of a
+-- spawn, empty at TRACKER_BAR_RANGE yards or more.
 ---------------------------------------------------------------------------
 
+local FLAT = "Interface\\Buttons\\WHITE8X8"
+local TEXT_FONT = "Fonts\\FRIZQT__.TTF"
+local NUMBER_FONT = "Fonts\\ARIALN.TTF"
+local TRACKER_WIDTH = 220
+local HEADER = 24
+local ROW = 20
+local ROW_GAP = 2
+local PAD = 5
+local BAR_BRIGHTNESS = 0.8
+local BAR_FADE = { 0.87, 0.72, 0.88 }   -- the meter's left-to-right bar shading
+local BAR_SPEED = 8
+local TRACKER_BAR_RANGE = 400
+
+local function Text(parent, size, font)
+    local text = parent:CreateFontString(nil, "OVERLAY")
+    text:SetFont(font or TEXT_FONT, size)
+    text:SetShadowColor(0, 0, 0, 1)
+    text:SetShadowOffset(1, -1)
+    return text
+end
+
+local function ShadeBar(fill, color, from, to)
+    local function Channel(value, fade, position)
+        return value * BAR_BRIGHTNESS * (fade + (1 - fade) * position)
+    end
+    fill:SetGradient("HORIZONTAL",
+        Channel(color[1], BAR_FADE[1], from), Channel(color[2], BAR_FADE[2], from), Channel(color[3], BAR_FADE[3], from),
+        Channel(color[1], BAR_FADE[1], to), Channel(color[2], BAR_FADE[2], to), Channel(color[3], BAR_FADE[3], to))
+end
+
 local tracker = CreateFrame("Frame", "HoAAlertsTracker", UIParent)
-tracker:SetWidth(210)
-tracker:SetHeight(24)
+tracker:SetWidth(TRACKER_WIDTH)
+tracker:SetHeight(HEADER + PAD * 2 + ROW)
 tracker:SetPoint("RIGHT", UIParent, "RIGHT", -230, 120)
-tracker:SetFrameStrata("MEDIUM")
+tracker:SetFrameStrata("LOW")
 tracker:SetMovable(true)
 tracker:SetClampedToScreen(true)
 tracker:RegisterForDrag("LeftButton")
 tracker:SetBackdrop({
-    bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-    tile = true, tileSize = 16, edgeSize = 12,
+    bgFile = FLAT, edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", tile = false, edgeSize = 12,
     insets = { left = 3, right = 3, top = 3, bottom = 3 },
 })
-tracker:SetBackdropColor(0, 0, 0, 0.6)
-tracker:SetBackdropBorderColor(0.6, 0.6, 0.6, 0.8)
+tracker:SetBackdropColor(0.04, 0.04, 0.05, 0.62)
+tracker:SetBackdropBorderColor(0.55, 0.5, 0.42)
 tracker:Hide()
 
-tracker.title = tracker:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-tracker.title:SetPoint("TOPLEFT", tracker, "TOPLEFT", 8, -6)
+tracker.header = tracker:CreateTexture(nil, "BORDER")
+tracker.header:SetTexture(FLAT)
+tracker.header:SetGradientAlpha("VERTICAL", 0.1, 0.08, 0.05, 0.9, 0.24, 0.19, 0.12, 0.9)
+tracker.header:SetPoint("TOPLEFT", tracker, "TOPLEFT", 3, -3)
+tracker.header:SetPoint("TOPRIGHT", tracker, "TOPRIGHT", -3, -3)
+tracker.header:SetHeight(HEADER - 4)
+
+tracker.rule = tracker:CreateTexture(nil, "ARTWORK")
+tracker.rule:SetTexture(FLAT)
+tracker.rule:SetVertexColor(0.55, 0.45, 0.25, 0.8)
+tracker.rule:SetHeight(1)
+tracker.rule:SetPoint("TOPLEFT", tracker.header, "BOTTOMLEFT", 0, 0)
+tracker.rule:SetPoint("TOPRIGHT", tracker.header, "BOTTOMRIGHT", 0, 0)
+
+tracker.title = Text(tracker, 13)
+tracker.title:SetPoint("LEFT", tracker.header, "LEFT", 6, 0)
+tracker.title:SetTextColor(1, 0.82, 0)
 tracker.title:SetText("HoA Alerts")
+
+tracker.count = Text(tracker, 12, NUMBER_FONT)
+tracker.count:SetPoint("RIGHT", tracker.header, "RIGHT", -6, 0)
+tracker.count:SetJustifyH("RIGHT")
+
+tracker.empty = Text(tracker, 11)
+tracker.empty:SetPoint("TOPLEFT", tracker, "TOPLEFT", PAD + 4, -(HEADER + PAD + 4))
+tracker.empty:SetTextColor(0.63, 0.63, 0.63)
+tracker.empty:SetText("Nothing up yet. Drag to move.")
+tracker.empty:Hide()
 
 tracker.rows = {}
 for i = 1, TRACKER_ROWS do
     local row = CreateFrame("Frame", nil, tracker)
-    row:SetHeight(16)
-    row:SetPoint("TOPLEFT", tracker, "TOPLEFT", 8, -6 - i * 17)
-    row:SetPoint("RIGHT", tracker, "RIGHT", -8, 0)
+    local top = -(HEADER + PAD + (i - 1) * (ROW + ROW_GAP))
+    row:SetHeight(ROW)
+    row:SetPoint("TOPLEFT", tracker, "TOPLEFT", PAD, top)
+    row:SetPoint("TOPRIGHT", tracker, "TOPRIGHT", -PAD, top)
+
+    row.frame = row:CreateTexture(nil, "BACKGROUND")
+    row.frame:SetTexture(FLAT)
+    row.frame:SetVertexColor(0, 0, 0, 0.9)
+    row.frame:SetPoint("TOPLEFT", row, "TOPLEFT", 0, 0)
+    row.frame:SetWidth(ROW)
+    row.frame:SetHeight(ROW)
+
     row.icon = row:CreateTexture(nil, "ARTWORK")
-    row.icon:SetWidth(14)
-    row.icon:SetHeight(14)
-    row.icon:SetPoint("LEFT", row, "LEFT", 0, 0)
+    row.icon:SetPoint("TOPLEFT", row.frame, "TOPLEFT", 1, -1)
+    row.icon:SetPoint("BOTTOMRIGHT", row.frame, "BOTTOMRIGHT", -1, 1)
     row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-    row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.name:SetPoint("LEFT", row.icon, "RIGHT", 4, 0)
-    row.where = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.where:SetPoint("RIGHT", row, "RIGHT", 0, 0)
-    row.where:SetJustifyH("RIGHT")
+
+    row.track = row:CreateTexture(nil, "BACKGROUND")
+    row.track:SetTexture(FLAT)
+    row.track:SetVertexColor(0, 0, 0, 0.55)
+    row.track:SetPoint("TOPLEFT", row.frame, "TOPRIGHT", 2, 0)
+    row.track:SetPoint("BOTTOMRIGHT", row, "BOTTOMRIGHT", 0, 0)
+
+    row.fill = row:CreateTexture(nil, "BORDER")
+    row.fill:SetTexture(FLAT)
+    row.fill:SetHeight(ROW)
+    row.fill:SetPoint("TOPLEFT", row.track, "TOPLEFT", 0, 0)
+    row.fill:Hide()
+
+    row.value = Text(row, 13, NUMBER_FONT)
+    row.value:SetPoint("RIGHT", row, "RIGHT", -5, 0)
+    row.value:SetJustifyH("RIGHT")
+    row.name = Text(row, 11)
+    row.name:SetPoint("LEFT", row.track, "LEFT", 5, 0)
+    row.name:SetPoint("RIGHT", row.value, "LEFT", -4, 0)
+    row.name:SetJustifyH("LEFT")
+
+    row.barWidth = TRACKER_WIDTH - PAD * 2 - ROW - 2
+    row.level, row.goal = 0, 0
     row:Hide()
     tracker.rows[i] = row
+end
+
+local function DrawBar(row)
+    local width = row.barWidth * row.level
+    if width < 0.5 then
+        row.fill:Hide()
+        return
+    end
+    ShadeBar(row.fill, row.color, 0, row.level)
+    row.fill:SetWidth(width)
+    row.fill:Show()
 end
 
 ---------------------------------------------------------------------------
@@ -438,6 +532,13 @@ local function SortedSpawns()
     return list
 end
 
+local function Closeness(yards)
+    if not yards then
+        return 0
+    end
+    return math.max(0.03, math.min(1, 1 - yards / TRACKER_BAR_RANGE))
+end
+
 local function RefreshTracker()
     local db = HoAAlertsDB
     local list = (db and db.tracker) and SortedSpawns() or {}
@@ -449,22 +550,36 @@ local function RefreshTracker()
         if db.types[spawn.type.key] then
             shown = shown + 1
             local row = tracker.rows[shown]
+            row.color = spawn.type.color
+            row.goal = Closeness(spawn.yards)
+            if row.key ~= spawn.id then
+                row.key = spawn.id       -- a different spawn moved into this row: no slide
+                row.level = row.goal
+            end
             row.icon:SetTexture(ICON_PATH .. spawn.type.icon)
-            row.name:SetText(Hex(spawn.type.color) .. spawn.type.name .. "|r")
+            row.name:SetText(spawn.type.name)
             if spawn.yards then
                 local dir = spawn.direction == "here" and "here" or spawn.direction
-                row.where:SetText(math.floor(spawn.yards + 0.5) .. "y  |cffaaaaaa" .. dir .. "|r")
+                row.value:SetText(math.floor(spawn.yards + 0.5) .. "y |cffa0a0a0" .. dir .. "|r")
             else
-                row.where:SetText("")
+                row.value:SetText("")
             end
+            DrawBar(row)
             row:Show()
         end
     end
     for i = shown + 1, TRACKER_ROWS do
+        tracker.rows[i].key = nil
         tracker.rows[i]:Hide()
     end
+    tracker.count:SetText(shown > 0 and (shown .. " up") or "")
     if shown > 0 or unlocked then
-        tracker:SetHeight(28 + math.max(shown, 1) * 17)
+        if shown == 0 then
+            tracker.empty:Show()
+        else
+            tracker.empty:Hide()
+        end
+        tracker:SetHeight(HEADER + PAD * 2 + math.max(shown, 1) * (ROW + ROW_GAP) - ROW_GAP)
         tracker:Show()
     else
         tracker:Hide()
@@ -474,6 +589,18 @@ A.RefreshTracker = RefreshTracker
 
 local trackerElapsed = 0
 tracker:SetScript("OnUpdate", function()
+    -- bars glide toward their target like the meter's
+    local step = math.min(1, arg1 * BAR_SPEED)
+    for _, row in ipairs(this.rows) do
+        if row:IsShown() and row.level ~= row.goal then
+            local level = row.level + (row.goal - row.level) * step
+            if math.abs(level - row.goal) < 0.002 then
+                level = row.goal
+            end
+            row.level = level
+            DrawBar(row)
+        end
+    end
     trackerElapsed = trackerElapsed + arg1
     if trackerElapsed >= TRACKER_INTERVAL then
         trackerElapsed = 0
