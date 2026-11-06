@@ -862,6 +862,48 @@ local function Remaining()
     return stage.duration - (stage.elapsed + 0.5 + since)
 end
 
+-- Like a raid pull timer: say "10", show every number big on screen, and
+-- say the last five out loud.
+local SPEAK_FROM = 5
+local NUMBER_HOLD, NUMBER_FADE = 0.55, 0.4
+
+-- The big number sits just above the warning stack and moves with it.
+local bigNumber = CreateFrame("Frame", "HoAAlertsCountdownNumber", warning)
+bigNumber:SetWidth(160)
+bigNumber:SetHeight(80)
+bigNumber:SetPoint("BOTTOM", warning, "TOP", 0, 6)
+bigNumber.text = bigNumber:CreateFontString(nil, "OVERLAY")
+bigNumber.text:SetFont("Fonts\\FRIZQT__.TTF", 64, "THICKOUTLINE")
+bigNumber.text:SetPoint("CENTER", bigNumber, "CENTER", 0, 0)
+bigNumber:Hide()
+bigNumber:SetScript("OnUpdate", function()
+    local age = GetTime() - this.at
+    if age >= NUMBER_HOLD + NUMBER_FADE then
+        this:Hide()
+        return
+    end
+    this:SetAlpha(age > NUMBER_HOLD and (1 - (age - NUMBER_HOLD) / NUMBER_FADE) or 1)
+    this:SetScale(age < 0.15 and (1 + (0.15 - age) * 2.5) or 1)   -- pop in
+end)
+
+local function ShowNumber(n)
+    bigNumber.text:SetText(n)
+    -- last three in red, the rest in the boss orange
+    if n <= 3 then
+        bigNumber.text:SetTextColor(1, 0.15, 0.1)
+    else
+        bigNumber.text:SetTextColor(1, 0.55, 0.15)
+    end
+    bigNumber.at = GetTime()
+    bigNumber:SetAlpha(1)
+    bigNumber:Show()
+end
+
+local function StopCountdown()
+    spoken = nil
+    bigNumber:Hide()
+end
+
 local countdown = CreateFrame("Frame")
 countdown:SetScript("OnUpdate", function()
     local db = HoAAlertsDB
@@ -885,7 +927,8 @@ countdown:SetScript("OnUpdate", function()
     if not (db.bossCountdown or testEnd) then
         return
     end
-    if db.sound then
+    ShowNumber(n)
+    if db.sound and (n == COUNTDOWN_FROM or n <= SPEAK_FROM) then
         PlaySoundFile(COUNTDOWN_DIR .. n .. ".wav")
     end
     if n == COUNTDOWN_FROM and db.warning then
@@ -908,7 +951,7 @@ handlers["start"] = function(f)
     stage.finale = f[11] == "1"
     stage.elapsed, stage.at = 0, GetTime()
     stage.bossUp, stage.paused, stage.running = false, false, true
-    spoken = nil
+    StopCountdown()
 end
 
 handlers["state"] = function(f)
@@ -930,7 +973,7 @@ end
 
 handlers["end"] = function()
     stage.running = false
-    spoken = nil
+    StopCountdown()
     for k in pairs(active) do
         active[k] = nil
     end

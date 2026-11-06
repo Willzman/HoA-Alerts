@@ -27,11 +27,13 @@ When several spawns of the same type appear within 3 seconds of each other (an e
 often drops a pile of chests), they merge into one warning that counts up, like `Elite Chest dropped!  x4`.
 Only the first one plays a sound, flashes and prints to chat.
 
-Before each **stage boss**, a voice counts down **10, 9, … 1** so you know exactly when it arrives,
-with a "Stage boss in 10 seconds!" warning at 10. It follows the run timer, holds when the game is
-paused, stops early if the boss is summoned early, and is skipped in Finale stages. Turn it off with
-`/hoaa countdown`, or hear it with `/hoaa test countdown`. The voice is "Amy", the countdown BigWigs and
-DBM also use (DBM calls it "Corsica"); see [License](#license).
+Before each **stage boss** you get a raid-style pull countdown: the voice says **"Ten"** with a
+"Stage boss in 10 seconds!" warning, a big number counts down on screen from 10, and the voice
+counts the last five out loud (**5, 4, 3, 2, 1**). It follows the run timer, holds when the game
+is paused, stops early if the boss is summoned early, and is skipped in Finale stages. Turn it off
+with `/hoaa countdown`, or try it with `/hoaa test countdown`. With sound off you still get the
+numbers. The voice is "Amy", the countdown BigWigs and DBM also use (DBM calls it "Corsica");
+see [License](#license).
 
 Warnings pop in, stay for 4 seconds, then fade out over 1 second. Up to three stack, with the newest
 closest to the action bar. Use `/hoaa unlock` to drag them somewhere else.
