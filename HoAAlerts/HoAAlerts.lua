@@ -27,21 +27,26 @@ local WARNING_BOTTOM = 100
 local TRACKER_ROWS = 8
 local TRACKER_INTERVAL = 0.2
 
+-- The Warsong Gulch "flag taken" horn, the default for every alert type.
+-- A SoundEntries interface row in the 1.12 data (row 9378); the benilla
+-- client resolves this exact name.
+local FLAG_TAKEN = "PVPFlagTaken.Mono"
+
 -- Spawn types, in display order. "kind" and "icon" come from the server
 -- (BonkRunShrines.cpp SHRINE_ICONS, BonkRun.cpp *_PIN_ICON).
 A.TYPES = {
     { key = "leyline", kind = "shrine", icon = "Spell_Arcane_StarFire", name = "Ley Line",
-      verb = "spawned", color = { 0.40, 0.65, 1.00 }, sound = "RaidWarning", default = true },
+      verb = "spawned", color = { 0.40, 0.65, 1.00 }, sound = FLAG_TAKEN, default = true },
     { key = "greed", kind = "shrine", icon = "INV_Misc_Coin_02", name = "Greed Totem",
-      verb = "spawned", color = { 1.00, 0.82, 0.00 }, sound = "LOOTWINDOWCOINSOUND", default = true },
+      verb = "spawned", color = { 1.00, 0.82, 0.00 }, sound = FLAG_TAKEN, default = true },
     { key = "altar", kind = "shrine", icon = "Ability_Warrior_Challange", name = "Challenge Altar",
-      verb = "spawned", color = { 1.00, 0.35, 0.25 }, sound = "ReadyCheck", default = true },
+      verb = "spawned", color = { 1.00, 0.35, 0.25 }, sound = FLAG_TAKEN, default = true },
     { key = "elite", kind = "chest", icon = "INV_Box_04", name = "Elite Chest",
-      verb = "dropped", color = { 0.25, 1.00, 0.35 }, sound = "QUESTCOMPLETED", default = true },
+      verb = "dropped", color = { 0.25, 1.00, 0.35 }, sound = FLAG_TAKEN, default = true },
     { key = "moonwell", kind = "shrine", icon = "Spell_Arcane_TeleportMoonglade", name = "Moonwell",
-      verb = "spawned", color = { 0.75, 0.55, 1.00 }, sound = "igQuestListComplete", default = false },
+      verb = "spawned", color = { 0.75, 0.55, 1.00 }, sound = FLAG_TAKEN, default = false },
     { key = "valor", kind = "chest", icon = "INV_Box_02", name = "Valor Chest",
-      verb = "spawned", color = { 0.85, 0.85, 0.85 }, sound = "MapPing", default = false },
+      verb = "spawned", color = { 0.85, 0.85, 0.85 }, sound = FLAG_TAKEN, default = false },
 }
 
 local TYPE_BY_KEY, TYPE_BY_SIGNATURE = {}, {}
@@ -62,6 +67,7 @@ A.TYPE_BY_KEY = TYPE_BY_KEY
 local SOUND_DIR = "Interface\\AddOns\\HoAAlerts\\Sounds\\"
 A.SOUND_DIR = SOUND_DIR
 A.SOUNDS = {
+    { id = "PVPFlagTaken.Mono",     name = "Flag Taken" },
     { id = "RaidWarning",           name = "Raid Warning" },
     { id = "ReadyCheck",            name = "Ready Check" },
     { id = "LOOTWINDOWCOINSOUND",   name = "Coins" },
@@ -945,6 +951,13 @@ events:SetScript("OnEvent", function()
             HoAAlertsDB = {}
         end
         CopyDefaults(DEFAULTS, HoAAlertsDB)
+        -- Settings version 2: every alert type switched to the flag-taken sound.
+        if (HoAAlertsDB.settingsVersion or 1) < 2 then
+            for _, t in ipairs(A.TYPES) do
+                HoAAlertsDB.sounds[t.key] = FLAG_TAKEN
+            end
+            HoAAlertsDB.settingsVersion = 2
+        end
         RestorePosition(warning, "warningPos")
         RestorePosition(tracker, "trackerPos")
         -- whatever is already on the map when we load is not news

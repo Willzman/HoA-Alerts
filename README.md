@@ -5,12 +5,12 @@ It warns you when one of these appears during a run:
 
 | Alert | Default | Default sound |
 |---|---|---|
-| **Ley Line** | on | Raid warning |
-| **Greed Totem** | on | Coin sound |
-| **Challenge Altar** | on | Ready check |
-| **Elite Chest** (free chest) | on | Quest complete |
-| Moonwell | off | Quest list complete |
-| Valor Chest (costs Valor) | off | Map ping |
+| **Ley Line** | on | Flag Taken |
+| **Greed Totem** | on | Flag Taken |
+| **Challenge Altar** | on | Flag Taken |
+| **Elite Chest** (free chest) | on | Flag Taken |
+| Moonwell | off | Flag Taken |
+| Valor Chest (costs Valor) | off | Flag Taken |
 
 Each warning can:
 
@@ -38,7 +38,7 @@ closest to the action bar. Use `/hoaa unlock` to drag them somewhere else.
 
 Each alert type can use any of these (`/hoaa sounds` lists them with numbers):
 
-- **Game sounds** from your own game data: Raid Warning, Ready Check, Coins, Quest Complete, Objective Done,
+- **Game sounds** from your own game data: Flag Taken (the Warsong Gulch flag horn, `PVPFlagTaken.Mono`, the default for every alert), Raid Warning, Ready Check, Coins, Quest Complete, Objective Done,
   Level Up, Map Ping, Party Invite, Quest Failed, Flight Path Found, Quest Accepted, Friend Online,
   PvP Update, Anvil, Target Enemy. All of them are sounds the Hordes of Azeroth addon or client already plays.
 - **HoA Alerts' own sounds**: HoA Chime, HoA Bell, HoA Alarm and HoA Horn. They're shipped in
