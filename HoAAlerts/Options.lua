@@ -126,7 +126,7 @@ local hows = {   -- key, label, column, row
     { "chat",    "Chat message",     1, 1 },
     { "tracker", "Tracker list (distance + direction)", 0, 2 },
     { "groundFlash", "Red flash when a ground effect hits me", 0, 3 },
-    { "bossCountdown", "Voice countdown (10 to 1) before the stage boss", 0, 4 },
+    { "bossCountdown", "Stage boss countdown (numbers from 10, voice 5 to 1)", 0, 4 },
 }
 for _, how in ipairs(hows) do
     local key = how[1]
@@ -202,7 +202,7 @@ local function Help()
         "/hoaa warning | sound | flash | chat | tracker - toggle an output",
         "/hoaa flash <type> - toggle the screen flash for one alert type",
         "/hoaa ground - toggle the red flash when a ground effect hits you",
-        "/hoaa countdown - toggle the 10-to-1 voice countdown before the stage boss",
+        "/hoaa countdown - toggle the stage boss countdown (and the summoning-stone 3-2-1)",
         "/hoaa sounds - list sounds; /hoaa sound <type> <number> - pick one",
         "/hoaa soundfile <type> <file.wav|file.mp3> - play your own file from HoAAlerts\\Sounds",
         "/hoaa reset - reset frame positions",
