@@ -115,3 +115,9 @@ a third of a second give one flash.
 - If the game changes these icons or the message format in a later version, update the table at the
   top of `HoAAlerts/HoAAlerts.lua`. This version was written against game version 0.6.4.
 - The addon only reads chat and combat-log messages the game already sends to you. It doesn't change the game or send anything to the server.
+
+## License
+
+[MIT](LICENSE). This covers the addon code and the sounds in `HoAAlerts/Sounds`, which were generated
+from scratch by `tools/make_sounds.py`. Game sounds picked by name come from your own game data and
+aren't part of this repository.

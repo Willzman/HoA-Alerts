@@ -1,8 +1,8 @@
 """Generate HoA Alerts' own alert sounds.
 
 These are synthesized from scratch (no recordings or samples), so they are
-original to this project and safe to ship with it. Run from the repository
-root:
+original to this project and covered by its MIT license (see LICENSE).
+Run from the repository root:
 
     python3 tools/make_sounds.py
 
