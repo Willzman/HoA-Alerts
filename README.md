@@ -15,7 +15,7 @@ It warns you when one of these appears during a run:
 Each warning can:
 
 - show **big text** between your hero and the action bar with the spawn's icon, distance and direction (`Ley Line spawned! (230 yd, NE)`)
-- play a **sound**, a different one per type. You can pick another sound for each type in `/hoaa` (click the sound button to go to the next one, right-click to go back; each click plays it) or with `/hoaa sound <type> <number>`. Choices: Raid Warning, Ready Check, Coins, Quest Complete, Objective Done, Level Up, Map Ping, Party Invite, Quest Failed, or No Sound. Sounds follow the game's Sound Effects volume.
+- play a **sound**, a different one per type. You can pick another sound for each type in `/hoaa` (click the sound button to go to the next one, right-click to go back; each click plays it) or with `/hoaa sound <type> <number>`. See [Sounds](#sounds).
 - **flash the screen edges** in the spawn's color
 - print a **chat message**
 - add the spawn to a small **tracker list**, styled like the game's damage meter, that shows every active spawn, nearest first, with live distance and compass direction (N, NE, E, ...; north is up on the map). Each row's bar fills as you get closer (full when you're on it, empty at 400+ yards)
@@ -33,6 +33,22 @@ closest to the action bar. Use `/hoaa unlock` to drag them somewhere else.
 ![Mockup of HoA Alerts: three stacked spawn warnings at the top of the screen, a green screen-edge flash, and the tracker list on the right](docs/preview.png)
 
 *Mockup of the layout, not an in-game screenshot. Type `/hoaa test` in game to see the real thing.*
+
+## Sounds
+
+Each alert type can use any of these (`/hoaa sounds` lists them with numbers):
+
+- **Game sounds** from your own game data: Raid Warning, Ready Check, Coins, Quest Complete, Objective Done,
+  Level Up, Map Ping, Party Invite, Quest Failed, Flight Path Found, Quest Accepted, Friend Online,
+  PvP Update, Anvil, Target Enemy. All of them are sounds the Hordes of Azeroth addon or client already plays.
+- **HoA Alerts' own sounds**: HoA Chime, HoA Bell, HoA Alarm and HoA Horn. They're shipped in
+  `HoAAlerts/Sounds` and were synthesized from scratch by `tools/make_sounds.py`.
+- **No Sound**: the text warning still shows.
+- **Your own file**: put a `.wav` or `.mp3` in `HoAAlerts/Sounds`, then type
+  `/hoaa soundfile <type> <file name>`, e.g. `/hoaa soundfile elite MyChest.mp3`. The game client plays WAV
+  and MP3 only (not OGG or FLAC).
+
+All sounds follow the game's Sound Effects volume.
 
 ## Install
 
@@ -54,6 +70,7 @@ closest to the action bar. Use `/hoaa unlock` to drag them somewhere else.
 | `/hoaa warning` / `sound` / `flash` / `chat` / `tracker` | Turn one kind of output on or off |
 | `/hoaa sounds` | List the sounds and what each type plays |
 | `/hoaa sound <type> <number>` | Pick a sound for one type, e.g. `/hoaa sound elite 1` |
+| `/hoaa soundfile <type> <file>` | Play your own WAV/MP3 from `HoAAlerts/Sounds` for one type |
 | `/hoaa ground` | Turn the red ground-effect hit flash on or off (`/hoaa test ground` to preview) |
 | `/hoaa reset` | Reset frame positions |
 

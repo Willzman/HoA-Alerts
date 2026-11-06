@@ -192,6 +192,7 @@ local function Help()
         "/hoaa warning | sound | flash | chat | tracker - toggle an output",
         "/hoaa ground - toggle the red flash when a ground effect hits you",
         "/hoaa sounds - list sounds; /hoaa sound <type> <number> - pick one",
+        "/hoaa soundfile <type> <file.wav|file.mp3> - play your own file from HoAAlerts\\Sounds",
         "/hoaa reset - reset frame positions",
     }
     for _, line in ipairs(lines) do
@@ -204,9 +205,10 @@ local OUTPUTS = { warning = true, sound = true, flash = true, chat = true, track
 SLASH_HOAALERTS1 = "/hoaa"
 SLASH_HOAALERTS2 = "/hoaalerts"
 SlashCmdList["HOAALERTS"] = function(msg)
-    msg = string.lower(msg or "")
-    local _, _, command, rest = string.find(msg, "^%s*(%S*)%s*(.-)%s*$")
-    command = command or ""
+    local _, _, command, rawRest = string.find(msg or "", "^%s*(%S*)%s*(.-)%s*$")
+    command = string.lower(command or "")
+    rawRest = rawRest or ""
+    local rest = string.lower(rawRest)   -- file names keep their case (rawRest)
     if command == "" or command == "config" or command == "options" then
         if panel:IsShown() then
             panel:Hide()
@@ -260,6 +262,23 @@ SlashCmdList["HOAALERTS"] = function(msg)
         HoAAlertsDB.sounds[key] = sound.id
         A.PlayAlertSound(sound.id)
         A.Print(t.name .. " now plays |cffffff00" .. sound.name .. "|r.")
+        if panel:IsShown() then
+            panel:Hide()
+            panel:Show()
+        end
+    elseif command == "soundfile" then
+        local _, _, key, file = string.find(rawRest, "^(%S+)%s+(.+)$")
+        key = key and string.lower(key)
+        local t = key and A.TYPE_BY_KEY[key]
+        local ext = file and string.lower(string.sub(file, -4)) or ""
+        if not t or (ext ~= ".wav" and ext ~= ".mp3") or string.find(file, "[\\/]") then
+            A.Print("Usage: /hoaa soundfile <type> <file.wav or file.mp3>")
+            A.Print("Put the file in the HoAAlerts\\Sounds folder first. WAV and MP3 work.")
+            return
+        end
+        HoAAlertsDB.sounds[key] = "file:" .. file
+        A.PlayAlertSound("file:" .. file)
+        A.Print(t.name .. " now plays |cffffff00" .. file .. "|r (if you don't hear it, check the file name and folder).")
         if panel:IsShown() then
             panel:Hide()
             panel:Show()
