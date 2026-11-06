@@ -77,6 +77,15 @@ All sounds follow the game's Sound Effects volume.
 
 ## Commands
 
+Type `/hoaa` to open the options window. Each alert type has its own on/off box, Flash box, sound
+(click to go to the next one, right-click to go back) and Test button.
+
+![Mockup of the HoA Alerts options window: one row per alert type with on/off, Flash, sound and Test controls, then the general settings, a range slider and buttons](docs/options.png)
+
+*Mockup of the layout, drawn from the addon's code with the default settings (Elite Chest's flash
+unticked as an example). The game draws its own checkboxes, buttons and fonts.*
+
+
 | Command | What it does |
 |---|---|
 | `/hoaa` | Open the options window |
