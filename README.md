@@ -32,9 +32,9 @@ When the **stage boss** spawns you get `<boss name> has arrived!` with distance 
 range (the range filter doesn't apply), and the boss is pinned to the top of the tracker, where its
 distance updates as it moves.
 
-Before each **stage boss** you get a raid-style pull countdown: the voice says **"Ten"** with a
-"Stage boss in 10 seconds!" warning, big gold-and-fire numbers zoom in on screen from 10, and the voice
-counts the last five out loud (**5, 4, 3, 2, 1**). It follows the run timer, holds when the game
+Before each **stage boss** you get a raid-style pull countdown: a "Stage boss in 10 seconds!"
+warning, big gold-and-fire numbers zooming in on screen from 10, and a voice counting the last five
+out loud (**5, 4, 3, 2, 1**). It follows the run timer, holds when the game
 is paused, hands over to a summoning-stone count if you use the stone, and is skipped in Finale stages. Turn it off
 with `/hoaa countdown`, or try it with `/hoaa test countdown`. With sound off you still get the
 numbers. The voice is "Amy", the countdown BigWigs and DBM also use (DBM calls it "Corsica");
