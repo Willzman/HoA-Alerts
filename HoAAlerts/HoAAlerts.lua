@@ -102,16 +102,6 @@ end
 
 -- Some clients expose degree-based trig in the math table; detect and adapt.
 local RADIANS = math.abs(math.sin(math.pi / 2) - 1) < 0.001
-local function Atan2(y, x)
-    local a = math.atan2(y, x)
-    if not RADIANS then
-        a = a * math.pi / 180
-    end
-    return a
-end
-local function Cos(a)
-    return RADIANS and math.cos(a) or math.cos(a * 180 / math.pi)
-end
 local function Sin(a)
     return RADIANS and math.sin(a) or math.sin(a * 180 / math.pi)
 end
@@ -127,15 +117,6 @@ local function HeroPosition()
     return north, west, mapId
 end
 
-local function Facing()
-    if GetCameraFacing then
-        return GetCameraFacing()
-    end
-    if GetPlayerFacing then
-        return GetPlayerFacing()
-    end
-end
-
 local TAN_22_5 = 0.41421356
 local function Compass(north, east)
     local an, ae = math.abs(north), math.abs(east)
@@ -149,7 +130,7 @@ local function Compass(north, east)
     return ns .. ew
 end
 
--- Returns yards, direction text ("2 o'clock" or "NE"), or nil when unknown.
+-- Returns yards and a compass direction ("N", "NE", ...), or nil when unknown.
 local function Where(spawn)
     local north, west, mapId = HeroPosition()
     if not north or (mapId and spawn.mapId and mapId ~= spawn.mapId) then
@@ -160,20 +141,7 @@ local function Where(spawn)
     if yards < 3 then
         return yards, "here"
     end
-    local facing = Facing()
-    if not facing then
-        return yards, Compass(dn, -dw)
-    end
-    -- facing is radians counter-clockwise from north, like a westward turn
-    local ahead = dn * Cos(facing) + dw * Sin(facing)
-    local left = dw * Cos(facing) - dn * Sin(facing)
-    local angle = Atan2(-left, ahead)                    -- clockwise from straight ahead
-    local hour = math.floor(angle * 6 / math.pi + 0.5)
-    hour = math.mod(hour + 12, 12)
-    if hour == 0 then
-        hour = 12
-    end
-    return yards, hour .. " o'clock"
+    return yards, Compass(dn, -dw)
 end
 A.Where = Where
 

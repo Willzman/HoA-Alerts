@@ -14,11 +14,11 @@ It warns you when one of these appears during a run:
 
 Each warning can:
 
-- show **big text** in the middle of the screen with the spawn's icon, distance and direction (`Ley Line spawned! (230 yd, 2 o'clock)`)
+- show **big text** in the middle of the screen with the spawn's icon, distance and direction (`Ley Line spawned! (230 yd, NE)`)
 - play a **sound**
 - **flash the screen edges** in the spawn's color
 - print a **chat message**
-- add the spawn to a small **tracker list** that shows every active spawn, nearest first, with live distance and clock direction (12 o'clock = straight ahead)
+- add the spawn to a small **tracker list** that shows every active spawn, nearest first, with live distance and compass direction (N, NE, E, ...; north is up on the map)
 
 ## Install
 
