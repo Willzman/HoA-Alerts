@@ -51,6 +51,11 @@ A.TYPES = {
     -- after 60 seconds (BonkRunVendor.cpp), so the tracker shows time left.
     { key = "merchant", kind = "vendor", icon = "INV_Misc_Bag_10", name = "Wandering Merchant",
       verb = "has arrived", color = { 0.95, 0.75, 0.45 }, sound = FLAG_TAKEN, default = true, timed = true },
+    -- Mini-bosses: like the stage boss (moving pin, own name, any range, same
+    -- sound), but sorted by distance in the tracker instead of pinned on top.
+    { key = "miniboss", kind = "miniboss", icon = "INV_Misc_Bone_ElfSkull_01", name = "Mini-boss",
+      verb = "has arrived", color = { 1.00, 0.50, 0.25 }, sound = "PVPTHROUGHQUEUE", default = true,
+      moves = true, anyRange = true, useLabel = true },
     -- The stage boss: its pin follows the boss around, so it is matched by id
     -- only (not position), always warns whatever the range setting, and the
     -- warning uses the boss's own name: "Hogger has arrived!". It is pinned to
