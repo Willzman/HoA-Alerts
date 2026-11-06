@@ -797,7 +797,7 @@ end
 A.Alert = Alert
 
 -- Stage clock for the boss countdown (see "Stage boss countdown" below).
-local stage = { duration = 0, elapsed = 0, at = 0, finale = false, bossUp = false, paused = false, running = false }
+local stage = { duration = 0, elapsed = 0, at = 0, finale = false, bossUp = false, paused = false, running = false, summoned = false }
 
 local OnObjective
 local function OnObjectiveOrBoss(f)
@@ -889,7 +889,7 @@ local function Remaining()
     if testEnd then
         return testEnd - GetTime()
     end
-    if not stage.running or stage.finale or stage.bossUp or stage.duration <= 0 then
+    if not stage.running or stage.finale or stage.bossUp or stage.summoned or stage.duration <= 0 then
         return nil
     end
     local since = stage.paused and 0 or math.min(GetTime() - stage.at, STATE_GAP)
@@ -1006,7 +1006,7 @@ handlers["start"] = function(f)
     stage.duration = tonumber(f[4] or "") or 0
     stage.finale = f[11] == "1"
     stage.elapsed, stage.at = 0, GetTime()
-    stage.bossUp, stage.paused, stage.running = false, false, true
+    stage.bossUp, stage.paused, stage.running, stage.summoned = false, false, true, false
     StopCountdown()
 end
 
@@ -1016,6 +1016,55 @@ handlers["state"] = function(f)
     stage.bossUp = stage.bossUp or f[7] == "1"   -- stays up until the next "start"
     stage.at = GetTime()
     stage.running = true
+end
+
+-- Summoning stone: the boss arrives 3 seconds after you use it. The server
+-- announces "Something answers the summons. It arrives in 3 seconds." and
+-- repeats it once a second with 2 and 1 (BonkRunShrines.cpp), so each notice
+-- is one beat of the countdown: big number plus voice. The "has arrived"
+-- alert then comes from the boss's map pin as usual.
+local SUMMON_PATTERNS = {
+    "^Something answers the summons%. It arrives in (%d+)",
+    "^有什么东西响应了召唤。它将在(%d+)秒",    -- zhCN client
+}
+local lastSummonBeat
+
+local function SummonSeconds(text)
+    for _, pattern in ipairs(SUMMON_PATTERNS) do
+        local _, _, n = string.find(text or "", pattern)
+        if n then
+            return tonumber(n)
+        end
+    end
+end
+A.SummonSeconds = SummonSeconds
+
+handlers["msg"] = function(f)
+    local db = HoAAlertsDB
+    -- the notice text is everything after "msg~" (it never contains "~")
+    local n = SummonSeconds(f[2])
+    if not n or n < 1 or n > COUNTDOWN_FROM then
+        return
+    end
+    local now = GetTime()
+    local first = not stage.summoned or not lastSummonBeat or now - lastSummonBeat > 1.6
+    if not first and n >= (spoken or 99) then
+        return                       -- same beat twice (co-op, resend)
+    end
+    stage.summoned = true            -- the timer countdown steps aside
+    lastSummonBeat = now
+    spoken = n
+    if not (db and db.bossCountdown) then
+        return
+    end
+    ShowNumber(n)
+    if db.sound then
+        PlaySoundFile(COUNTDOWN_DIR .. n .. ".wav")
+    end
+    if first and db.warning then
+        ShowWarning("Boss summoned! Arriving in " .. n .. (n == 1 and " second!" or " seconds!"),
+            ICON_PATH .. BOSS_ICON, BOSS_COLOR)
+    end
 end
 
 handlers["paused"] = function(f)

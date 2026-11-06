@@ -35,10 +35,14 @@ distance updates as it moves.
 Before each **stage boss** you get a raid-style pull countdown: the voice says **"Ten"** with a
 "Stage boss in 10 seconds!" warning, big gold-and-fire numbers zoom in on screen from 10, and the voice
 counts the last five out loud (**5, 4, 3, 2, 1**). It follows the run timer, holds when the game
-is paused, stops early if the boss is summoned early, and is skipped in Finale stages. Turn it off
+is paused, hands over to a summoning-stone count if you use the stone, and is skipped in Finale stages. Turn it off
 with `/hoaa countdown`, or try it with `/hoaa test countdown`. With sound off you still get the
 numbers. The voice is "Amy", the countdown BigWigs and DBM also use (DBM calls it "Corsica");
 see [License](#license).
+
+Using a **summoning stone** brings the boss in 3 seconds. HoA Alerts shows "Boss summoned! Arriving
+in 3 seconds!" and counts **3, 2, 1** with the big numbers and the voice, in step with the game's own
+notices, then gives the usual "has arrived" alert. The `/hoaa countdown` setting covers both counts.
 
 Warnings pop in, stay for 4 seconds, then fade out over 1 second. Up to three stack, with the newest
 closest to the action bar. Use `/hoaa unlock` to drag them somewhere else.
