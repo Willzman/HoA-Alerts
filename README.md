@@ -14,7 +14,7 @@ It warns you when one of these appears during a run:
 
 Each warning can:
 
-- show **big text** in the middle of the screen with the spawn's icon, distance and direction (`Ley Line spawned! (230 yd, NE)`)
+- show **big text** between your hero and the action bar with the spawn's icon, distance and direction (`Ley Line spawned! (230 yd, NE)`)
 - play a **sound**
 - **flash the screen edges** in the spawn's color
 - print a **chat message**
@@ -23,7 +23,8 @@ Each warning can:
 It also **flashes the screen edges red when a ground effect hits you**, meaning you didn't get out of a
 telegraphed circle, cone, line, ring, eruption or bolt landing zone in time. Turn it off with `/hoaa ground`.
 
-Warnings pop in, stay for 4 seconds, then fade out over 1 second. Up to three stack, newest on top.
+Warnings pop in, stay for 4 seconds, then fade out over 1 second. Up to three stack, with the newest
+closest to the action bar. Use `/hoaa unlock` to drag them somewhere else.
 
 ![Mockup of HoA Alerts: three stacked spawn warnings at the top of the screen, a green screen-edge flash, and the tracker list on the right](docs/preview.png)
 

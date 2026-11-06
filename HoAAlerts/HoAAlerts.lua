@@ -18,6 +18,10 @@ local PREFIX = "BONK~"
 local ICON_PATH = "Interface\\Icons\\"
 local QUIET_AFTER_START = 2      -- seconds: the server resends every pin after a reload
 local WARNING_LINES = 3
+-- Warnings sit between the hero and the Hordes of Azeroth action bar: the
+-- bar (with its level badge) is about 60 units tall at the bottom of the
+-- screen and the camera keeps the hero at the center.
+local WARNING_BOTTOM = 100
 local TRACKER_ROWS = 8
 local TRACKER_INTERVAL = 0.2
 
@@ -46,7 +50,7 @@ end
 A.TYPE_BY_KEY = TYPE_BY_KEY
 
 local DEFAULTS = {
-    warning = true,     -- big text in the middle of the screen
+    warning = true,     -- big text just above the action bar
     sound = true,
     flash = true,       -- colored glow around the screen edges
     chat = true,
@@ -164,7 +168,7 @@ end
 local warning = CreateFrame("Frame", "HoAAlertsWarningFrame", UIParent)
 warning:SetWidth(640)
 warning:SetHeight(WARNING_LINES * 40)
-warning:SetPoint("TOP", UIParent, "TOP", 0, -160)
+warning:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, WARNING_BOTTOM)
 warning:SetFrameStrata("HIGH")
 warning:SetMovable(true)
 warning:SetClampedToScreen(true)
@@ -180,7 +184,7 @@ for i = 1, WARNING_LINES do
     local line = CreateFrame("Frame", nil, warning)
     line:SetWidth(640)
     line:SetHeight(38)
-    line:SetPoint("TOP", warning, "TOP", 0, -(i - 1) * 40)
+    line:SetPoint("BOTTOM", warning, "BOTTOM", 0, (i - 1) * 40)   -- newest nearest the bar
     line.text = line:CreateFontString(nil, "OVERLAY")
     line.text:SetFont("Fonts\\FRIZQT__.TTF", 24, "THICKOUTLINE")
     line.text:SetPoint("CENTER", line, "CENTER", 18, 0)
@@ -769,7 +773,7 @@ end
 function A.ResetPositions()
     HoAAlertsDB.warningPos, HoAAlertsDB.trackerPos = nil, nil
     warning:ClearAllPoints()
-    warning:SetPoint("TOP", UIParent, "TOP", 0, -160)
+    warning:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, WARNING_BOTTOM)
     tracker:ClearAllPoints()
     tracker:SetPoint("RIGHT", UIParent, "RIGHT", -230, 120)
 end
