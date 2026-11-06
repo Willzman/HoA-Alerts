@@ -1020,7 +1020,9 @@ end)
 -- Preview a countdown: from 10 (the stage boss timer) or from 3 (a stone).
 function A.TestCountdown(from)
     spoken = nil
-    testEnd = GetTime() + (from or COUNTDOWN_FROM) + 0.05
+    -- end exactly "from" seconds out: the first frame then rounds up to "from"
+    -- itself (any extra would round up to from + 1 and say "4" for a 3-2-1)
+    testEnd = GetTime() + (from or COUNTDOWN_FROM)
 end
 
 function A.CountdownRemaining()
