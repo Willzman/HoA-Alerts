@@ -1,0 +1,8 @@
+## Interface: 11200
+## Title: HoA Alerts
+## Notes: Boss-mod style spawn warnings for Hordes of Azeroth: Ley Lines, Greed Totems, Challenge Altars and Elite Chests.
+## Author: willzman
+## Version: 1.0.0
+## SavedVariables: HoAAlertsDB
+HoAAlerts.lua
+Options.lua
