@@ -50,7 +50,7 @@ see [License](#license).
 
 Using a **summoning stone** brings the boss in 3 seconds. HoA Alerts shows "Boss summoned! Arriving
 in 3 seconds!" and counts **3, 2, 1** with the big numbers and the voice, in step with the game's own
-notices, then gives the usual "has arrived" alert. The `/hoaa countdown` setting covers both counts.
+notices, then gives the usual "has arrived" alert. Turn this one off with `/hoaa stone` (separate from `/hoaa countdown`), or try it with `/hoaa test stone`.
 
 Warnings pop in, stay for 4 seconds, then fade out over 1 second. Up to three stack, with the newest
 closest to the action bar. Use `/hoaa unlock` to drag them somewhere else.
@@ -105,7 +105,8 @@ unticked as an example). The game draws its own checkboxes, buttons and fonts.*
 | `/hoaa sounds` | List the sounds and what each type plays |
 | `/hoaa sound <type> <number>` | Pick a sound for one type, e.g. `/hoaa sound elite 1` |
 | `/hoaa soundfile <type> <file>` | Play your own WAV/MP3 from `HoAAlerts/Sounds` for one type |
-| `/hoaa countdown` | Turn the stage boss voice countdown on or off (`/hoaa test countdown` to hear it) |
+| `/hoaa countdown` | Turn the stage boss countdown on or off (`/hoaa test countdown` to try it) |
+| `/hoaa stone` | Turn the summoning stone 3-2-1 countdown on or off (`/hoaa test stone` to try it) |
 | `/hoaa flash <type>` | Turn the screen flash on or off for one alert type, e.g. `/hoaa flash elite` |
 | `/hoaa ground` | Turn the red ground-effect hit flash on or off (`/hoaa test ground` to preview) |
 | `/hoaa reset` | Reset frame positions |

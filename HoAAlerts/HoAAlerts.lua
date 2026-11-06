@@ -157,7 +157,8 @@ local DEFAULTS = {
     chat = true,
     tracker = true,     -- small list of active spawns with distance and direction
     groundFlash = true, -- red flash when a ground effect hits you
-    bossCountdown = true, -- spoken 10..1 before the stage boss arrives
+    bossCountdown = true, -- countdown before the stage boss arrives on the timer
+    stoneCountdown = true, -- 3-2-1 when the boss is summoned early at a stone
     range = 0,          -- only warn for spawns within this many yards (0 = any distance)
     holdTime = 4,       -- seconds a warning stays fully visible
     types = {},
@@ -1016,9 +1017,10 @@ countdown:SetScript("OnUpdate", function()
     end
 end)
 
-function A.TestCountdown()
+-- Preview a countdown: from 10 (the stage boss timer) or from 3 (a stone).
+function A.TestCountdown(from)
     spoken = nil
-    testEnd = GetTime() + COUNTDOWN_FROM + 0.05
+    testEnd = GetTime() + (from or COUNTDOWN_FROM) + 0.05
 end
 
 function A.CountdownRemaining()
@@ -1078,8 +1080,8 @@ handlers["msg"] = function(f)
     stage.summoned = true            -- the timer countdown steps aside
     lastSummonBeat = now
     spoken = n
-    if not (db and db.bossCountdown) then
-        return
+    if not (db and db.stoneCountdown) then
+        return                       -- still steps the timer count aside above
     end
     ShowNumber(n)
     if db.sound then

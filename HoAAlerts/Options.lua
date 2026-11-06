@@ -5,7 +5,7 @@ local A = HoAAlerts
 
 local panel = CreateFrame("Frame", "HoAAlertsOptions", UIParent)
 panel:SetWidth(420)
-panel:SetHeight(570)
+panel:SetHeight(596)
 panel:SetPoint("CENTER", UIParent, "CENTER", 0, 40)
 panel:SetFrameStrata("DIALOG")
 panel:SetMovable(true)
@@ -127,6 +127,7 @@ local hows = {   -- key, label, column, row
     { "tracker", "Tracker list (distance + direction)", 0, 2 },
     { "groundFlash", "Red flash when a ground effect hits me", 0, 3 },
     { "bossCountdown", "Stage boss countdown (numbers from 10, voice 5 to 1)", 0, 4 },
+    { "stoneCountdown", "Summoning stone countdown (3, 2, 1)", 0, 5 },
 }
 for _, how in ipairs(hows) do
     local key = how[1]
@@ -136,7 +137,8 @@ for _, how in ipairs(hows) do
 end
 SmallButton("Testground", "Test", 50, "TOPRIGHT", -24, y - 3 * 26 - 1, function() A.Test("ground") end)
 SmallButton("Testcountdown", "Test", 50, "TOPRIGHT", -24, y - 4 * 26 - 1, function() A.TestCountdown() end)
-y = y - 5 * 26
+SmallButton("Teststone", "Test", 50, "TOPRIGHT", -24, y - 5 * 26 - 1, function() A.TestCountdown(3) end)
+y = y - 6 * 26
 
 -- Range slider
 y = y - 28
@@ -195,14 +197,15 @@ local function Help()
     A.Print("v" .. A.VERSION .. " commands:")
     local lines = {
         "/hoaa - open the options window",
-        "/hoaa test [type] - show test warnings ('ground' = hit flash, 'countdown' = boss countdown)",
+        "/hoaa test [type] - show test warnings ('ground' = hit flash, 'countdown' = boss countdown, 'stone' = 3-2-1)",
         "/hoaa unlock | lock - move the warning text and tracker",
         "/hoaa range <yards> - only warn within that distance (0 = any)",
         "/hoaa <type> - toggle an alert type: leyline, greed, altar, elite, moonwell, valor, merchant, miniboss, boss",
         "/hoaa warning | sound | flash | chat | tracker - toggle an output",
         "/hoaa flash <type> - toggle the screen flash for one alert type",
         "/hoaa ground - toggle the red flash when a ground effect hits you",
-        "/hoaa countdown - toggle the stage boss countdown (and the summoning-stone 3-2-1)",
+        "/hoaa countdown - toggle the stage boss countdown",
+        "/hoaa stone - toggle the summoning stone 3-2-1 countdown",
         "/hoaa sounds - list sounds; /hoaa sound <type> <number> - pick one",
         "/hoaa soundfile <type> <file.wav|file.mp3> - play your own file from HoAAlerts\\Sounds",
         "/hoaa reset - reset frame positions",
@@ -232,6 +235,10 @@ SlashCmdList["HOAALERTS"] = function(msg)
     elseif command == "test" then
         if rest == "countdown" then
             A.TestCountdown()
+            return
+        end
+        if rest == "stone" then
+            A.TestCountdown(3)
             return
         end
         if rest ~= "" and rest ~= "ground" and not A.TYPE_BY_KEY[rest] then
@@ -301,7 +308,10 @@ SlashCmdList["HOAALERTS"] = function(msg)
         end
     elseif command == "countdown" then
         HoAAlertsDB.bossCountdown = not HoAAlertsDB.bossCountdown
-        A.Print("Stage boss voice countdown " .. OnOff(HoAAlertsDB.bossCountdown))
+        A.Print("Stage boss countdown " .. OnOff(HoAAlertsDB.bossCountdown))
+    elseif command == "stone" then
+        HoAAlertsDB.stoneCountdown = not HoAAlertsDB.stoneCountdown
+        A.Print("Summoning stone countdown " .. OnOff(HoAAlertsDB.stoneCountdown))
     elseif command == "ground" then
         HoAAlertsDB.groundFlash = not HoAAlertsDB.groundFlash
         A.Print("Ground-effect hit flash " .. OnOff(HoAAlertsDB.groundFlash))
