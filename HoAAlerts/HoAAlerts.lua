@@ -80,6 +80,7 @@ A.SOUND_DIR = SOUND_DIR
 A.SOUNDS = {
     { id = "PVPFlagTaken.Mono",     name = "Flag Taken" },
     { id = "PVPTHROUGHQUEUE",       name = "Battleground Ready" },
+    { id = "PVPFlagTakenHordeMono", name = "Flag Taken (Horde)" },
     { id = "RaidWarning",           name = "Raid Warning" },
     { id = "ReadyCheck",            name = "Ready Check" },
     { id = "LOOTWINDOWCOINSOUND",   name = "Coins" },
@@ -896,9 +897,12 @@ local function Remaining()
     return stage.duration - (stage.elapsed + 0.5 + since)
 end
 
--- Like a raid pull timer: show every number big on screen from 10 and say
--- only the last five out loud.
+-- Like a raid pull timer: a horn and a warning at 10, every number big on
+-- screen from 10, and only the last five said out loud.
 local SPEAK_FROM = 5
+-- Played with the "Stage boss in 10 seconds!" warning: the Warsong Gulch
+-- Horde flag horn, one of the PVP*Mono interface sounds in the 1.12 data.
+local TEN_SECOND_SOUND = "PVPFlagTakenHordeMono"
 local NUMBER_HOLD, NUMBER_FADE = 0.6, 0.35
 
 -- The big number sits just above the warning stack and moves with it. The
@@ -986,6 +990,8 @@ countdown:SetScript("OnUpdate", function()
     ShowNumber(n)
     if db.sound and n <= SPEAK_FROM then
         PlaySoundFile(COUNTDOWN_DIR .. n .. ".wav")
+    elseif db.sound and n == COUNTDOWN_FROM then
+        PlaySound(TEN_SECOND_SOUND)
     end
     if n == COUNTDOWN_FROM and db.warning then
         ShowWarning("Stage boss in " .. COUNTDOWN_FROM .. " seconds!", ICON_PATH .. BOSS_ICON, BOSS_COLOR)

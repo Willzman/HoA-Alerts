@@ -33,7 +33,7 @@ range (the range filter doesn't apply), and the boss is pinned to the top of the
 distance updates as it moves.
 
 Before each **stage boss** you get a raid-style pull countdown: a "Stage boss in 10 seconds!"
-warning, big gold-and-fire numbers zooming in on screen from 10, and a voice counting the last five
+warning with the Horde flag horn (`PVPFlagTakenHordeMono`), big gold-and-fire numbers zooming in on screen from 10, and a voice counting the last five
 out loud (**5, 4, 3, 2, 1**). It follows the run timer, holds when the game
 is paused, hands over to a summoning-stone count if you use the stone, and is skipped in Finale stages. Turn it off
 with `/hoaa countdown`, or try it with `/hoaa test countdown`. With sound off you still get the
@@ -55,7 +55,7 @@ closest to the action bar. Use `/hoaa unlock` to drag them somewhere else.
 
 Each alert type can use any of these (`/hoaa sounds` lists them with numbers):
 
-- **Game sounds** from your own game data: Flag Taken (the Warsong Gulch flag horn, `PVPFlagTaken.Mono`, the default for spawn alerts), Battleground Ready (`PVPTHROUGHQUEUE`, the stage boss default), Raid Warning, Ready Check, Coins, Quest Complete, Objective Done,
+- **Game sounds** from your own game data: Flag Taken (the Warsong Gulch flag horn, `PVPFlagTaken.Mono`, the default for spawn alerts), Battleground Ready (`PVPTHROUGHQUEUE`, the stage boss default), Flag Taken (Horde) (`PVPFlagTakenHordeMono`), Raid Warning, Ready Check, Coins, Quest Complete, Objective Done,
   Level Up, Map Ping, Party Invite, Quest Failed, Flight Path Found, Quest Accepted, Friend Online,
   PvP Update, Anvil, Target Enemy. All of them are sounds the Hordes of Azeroth addon or client already plays.
 - **HoA Alerts' own sounds**: HoA Chime, HoA Bell, HoA Alarm and HoA Horn. They're shipped in
