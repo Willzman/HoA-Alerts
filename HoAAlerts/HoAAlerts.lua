@@ -241,11 +241,22 @@ warning:SetScript("OnUpdate", function()
 end)
 
 local function ShowWarning(text, icon, color)
-    table.insert(messages, 1, { text = text, icon = icon, color = color, at = GetTime() })
+    local message = { text = text, icon = icon, color = color, at = GetTime() }
+    table.insert(messages, 1, message)
     while table.getn(messages) > WARNING_LINES do
         table.remove(messages)
     end
     RenderWarnings()
+    return message
+end
+
+local function IsShowing(message)
+    for _, shown in ipairs(messages) do
+        if shown == message then
+            return true
+        end
+    end
+    return false
 end
 
 ---------------------------------------------------------------------------
@@ -612,6 +623,19 @@ tracker:SetScript("OnUpdate", function()
     end
 end)
 
+-- Several spawns of one type in quick succession (an elite pack dying drops
+-- a pile of chests) merge into one warning that counts up: "x3". Only the
+-- first plays a sound, flashes and prints to chat. Each new one extends
+-- the window, so a long chain stays a single alert.
+local BURST_WINDOW = 3
+local POP_TIME = 0.25
+local bursts = {}   -- type key -> { at, count, where, message }
+
+local function WarningText(t, count, where)
+    return t.name .. " " .. t.verb .. "!" .. (count > 1 and ("  x" .. count) or "") ..
+        (where and ("  |cffffffff(" .. where .. ")|r") or "")
+end
+
 local function Alert(spawn, test)
     local db = HoAAlertsDB
     local t = spawn.type
@@ -626,13 +650,32 @@ local function Alert(spawn, test)
             end
         end
     end
+    local now = GetTime()
     local where = WhereText(spawn)
-    local text = t.name .. " " .. t.verb .. "!"
+
+    local burst = bursts[t.key]
+    if burst and now - burst.at < BURST_WINDOW then
+        burst.at = now
+        burst.count = burst.count + 1
+        if db.warning then
+            if burst.message and IsShowing(burst.message) then
+                burst.message.text = WarningText(t, burst.count, burst.where)
+                burst.message.at = now - POP_TIME      -- stay up longer, without popping again
+                RenderWarnings()
+            else
+                burst.message = ShowWarning(WarningText(t, burst.count, burst.where), ICON_PATH .. t.icon, t.color)
+            end
+        end
+        return
+    end
+
+    burst = { at = now, count = 1, where = where }
+    bursts[t.key] = burst
     if db.warning then
-        ShowWarning(text .. (where and ("  |cffffffff(" .. where .. ")|r") or ""), ICON_PATH .. t.icon, t.color)
+        burst.message = ShowWarning(WarningText(t, 1, where), ICON_PATH .. t.icon, t.color)
     end
     if db.chat then
-        Print(Hex(t.color) .. text .. "|r" .. (where and (" " .. where) or ""))
+        Print(Hex(t.color) .. t.name .. " " .. t.verb .. "!|r" .. (where and (" " .. where) or ""))
     end
     if db.sound then
         PlaySound(t.sound)

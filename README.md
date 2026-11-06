@@ -15,13 +15,17 @@ It warns you when one of these appears during a run:
 Each warning can:
 
 - show **big text** between your hero and the action bar with the spawn's icon, distance and direction (`Ley Line spawned! (230 yd, NE)`)
-- play a **sound**
+- play a **sound** (a different one per type, see the table above)
 - **flash the screen edges** in the spawn's color
 - print a **chat message**
 - add the spawn to a small **tracker list**, styled like the game's damage meter, that shows every active spawn, nearest first, with live distance and compass direction (N, NE, E, ...; north is up on the map). Each row's bar fills as you get closer (full when you're on it, empty at 400+ yards)
 
 It also **flashes the screen edges red when a ground effect hits you**, meaning you didn't get out of a
 telegraphed circle, cone, line, ring, eruption or bolt landing zone in time. Turn it off with `/hoaa ground`.
+
+When several spawns of the same type appear within 3 seconds of each other (an elite pack dying
+often drops a pile of chests), they merge into one warning that counts up, like `Elite Chest dropped!  x4`.
+Only the first one plays a sound, flashes and prints to chat.
 
 Warnings pop in, stay for 4 seconds, then fade out over 1 second. Up to three stack, with the newest
 closest to the action bar. Use `/hoaa unlock` to drag them somewhere else.
