@@ -153,10 +153,12 @@ local DEFAULTS = {
     holdTime = 4,       -- seconds a warning stays fully visible
     types = {},
     sounds = {},        -- per-type sound id (see A.SOUNDS)
+    flashTypes = {},    -- per-type screen flash (the "flash" setting above is the master switch)
 }
 for _, t in ipairs(A.TYPES) do
     DEFAULTS.types[t.key] = t.default
     DEFAULTS.sounds[t.key] = t.sound
+    DEFAULTS.flashTypes[t.key] = true
 end
 
 local function CopyDefaults(source, target)
@@ -791,7 +793,7 @@ local function Alert(spawn, test)
     if db.sound then
         A.PlayAlertSound(A.SoundFor(t.key))
     end
-    if db.flash then
+    if db.flash and db.flashTypes[t.key] ~= false then
         Flash(t.color)
     end
 end

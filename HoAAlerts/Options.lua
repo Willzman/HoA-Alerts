@@ -4,7 +4,7 @@
 local A = HoAAlerts
 
 local panel = CreateFrame("Frame", "HoAAlertsOptions", UIParent)
-panel:SetWidth(390)
+panel:SetWidth(420)
 panel:SetHeight(518)
 panel:SetPoint("CENTER", UIParent, "CENTER", 0, 40)
 panel:SetFrameStrata("DIALOG")
@@ -79,6 +79,9 @@ Header("Warn me about", -48)
 local soundHeader = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 soundHeader:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -78 - 30, -48)
 soundHeader:SetText("Sound")
+local flashHeader = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+flashHeader:SetPoint("TOPLEFT", panel, "TOPLEFT", 186, -48)
+flashHeader:SetText("Flash")
 local y = -68
 for _, t in ipairs(A.TYPES) do
     local key = t.key
@@ -88,6 +91,9 @@ for _, t in ipairs(A.TYPES) do
         t.icon)
     -- sound picker: left-click for the next sound, right-click for the previous;
     -- each click plays the newly picked sound
+    Check("Flash" .. key, "", 190, y,
+        function() return HoAAlertsDB.flashTypes[key] ~= false end,
+        function(on) HoAAlertsDB.flashTypes[key] = on end)
     local picker = SmallButton("Sound" .. key, "", 120, "TOPRIGHT", -78, y - 1, function()
         local i = A.SoundIndex(A.SoundFor(key)) or 0
         local n = table.getn(A.SOUNDS)
@@ -194,6 +200,7 @@ local function Help()
         "/hoaa range <yards> - only warn within that distance (0 = any)",
         "/hoaa <type> - toggle an alert type: leyline, greed, altar, elite, moonwell, valor, boss",
         "/hoaa warning | sound | flash | chat | tracker - toggle an output",
+        "/hoaa flash <type> - toggle the screen flash for one alert type",
         "/hoaa ground - toggle the red flash when a ground effect hits you",
         "/hoaa countdown - toggle the 10-to-1 voice countdown before the stage boss",
         "/hoaa sounds - list sounds; /hoaa sound <type> <number> - pick one",
@@ -298,6 +305,19 @@ SlashCmdList["HOAALERTS"] = function(msg)
     elseif command == "ground" then
         HoAAlertsDB.groundFlash = not HoAAlertsDB.groundFlash
         A.Print("Ground-effect hit flash " .. OnOff(HoAAlertsDB.groundFlash))
+    elseif command == "flash" and rest ~= "" then
+        local t = A.TYPE_BY_KEY[rest]
+        if not t then
+            A.Print("Usage: /hoaa flash <type>  (or /hoaa flash for all spawn flashes)")
+            return
+        end
+        HoAAlertsDB.flashTypes[rest] = HoAAlertsDB.flashTypes[rest] == false
+        A.Print(t.name .. " flash " .. OnOff(HoAAlertsDB.flashTypes[rest]) ..
+            (HoAAlertsDB.flash and "" or " (all spawn flashes are off: /hoaa flash)"))
+        if panel:IsShown() then
+            panel:Hide()
+            panel:Show()
+        end
     elseif OUTPUTS[command] then
         HoAAlertsDB[command] = not HoAAlertsDB[command]
         A.Print(command .. " " .. OnOff(HoAAlertsDB[command]))

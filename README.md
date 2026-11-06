@@ -17,7 +17,7 @@ Each warning can:
 
 - show **big text** between your hero and the action bar with the spawn's icon, distance and direction (`Ley Line spawned! (230 yd, NE)`)
 - play a **sound**, a different one per type. You can pick another sound for each type in `/hoaa` (click the sound button to go to the next one, right-click to go back; each click plays it) or with `/hoaa sound <type> <number>`. See [Sounds](#sounds).
-- **flash the screen edges** in the spawn's color
+- **flash the screen edges** in the spawn's color (each type has its own Flash checkbox in `/hoaa`, or use `/hoaa flash <type>`)
 - print a **chat message**
 - add the spawn to a small **tracker list**, styled like the game's damage meter, that shows every active spawn, nearest first, with live distance and compass direction (N, NE, E, ...; north is up on the map). Each row's bar fills as you get closer (full when you're on it, empty at 400+ yards)
 
@@ -89,6 +89,7 @@ All sounds follow the game's Sound Effects volume.
 | `/hoaa sound <type> <number>` | Pick a sound for one type, e.g. `/hoaa sound elite 1` |
 | `/hoaa soundfile <type> <file>` | Play your own WAV/MP3 from `HoAAlerts/Sounds` for one type |
 | `/hoaa countdown` | Turn the stage boss voice countdown on or off (`/hoaa test countdown` to hear it) |
+| `/hoaa flash <type>` | Turn the screen flash on or off for one alert type, e.g. `/hoaa flash elite` |
 | `/hoaa ground` | Turn the red ground-effect hit flash on or off (`/hoaa test ground` to preview) |
 | `/hoaa reset` | Reset frame positions |
 
