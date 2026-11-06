@@ -33,7 +33,7 @@ range (the range filter doesn't apply), and the boss is pinned to the top of the
 distance updates as it moves.
 
 Before each **stage boss** you get a raid-style pull countdown: the voice says **"Ten"** with a
-"Stage boss in 10 seconds!" warning, a big number counts down on screen from 10, and the voice
+"Stage boss in 10 seconds!" warning, big gold-and-fire numbers zoom in on screen from 10, and the voice
 counts the last five out loud (**5, 4, 3, 2, 1**). It follows the run timer, holds when the game
 is paused, stops early if the boss is summoned early, and is skipped in Finale stages. Turn it off
 with `/hoaa countdown`, or try it with `/hoaa test countdown`. With sound off you still get the
@@ -142,6 +142,10 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 This covers the addon code and the sounds directly in `HoAAlerts/Sounds`, which were generated from
 scratch by `tools/make_sounds.py`. Game sounds picked by name come from your own game data and aren't
 part of this repository.
+
+The countdown numerals in `HoAAlerts/Textures/Countdown` are original art made by
+`tools/make_numbers.py` from the [Metamorphous](https://fonts.google.com/specimen/Metamorphous) font by
+Sorkin Type Co (SIL Open Font License 1.1); the font itself isn't included.
 
 **Exception: `HoAAlerts/Sounds/Amy/`** (the countdown voice) is a separate work, not covered by the GPL.
 It's licensed [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/): voice by Amy-G, recorded

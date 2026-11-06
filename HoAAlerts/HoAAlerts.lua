@@ -899,37 +899,59 @@ end
 -- Like a raid pull timer: say "10", show every number big on screen, and
 -- say the last five out loud.
 local SPEAK_FROM = 5
-local NUMBER_HOLD, NUMBER_FADE = 0.55, 0.4
+local NUMBER_HOLD, NUMBER_FADE = 0.6, 0.35
 
--- The big number sits just above the warning stack and moves with it.
+-- The big number sits just above the warning stack and moves with it. The
+-- numerals are HoA Alerts' own gold-and-fire textures (Textures\Countdown,
+-- made by tools/make_numbers.py). Each one zooms in from large, settles,
+-- holds, then fades and shrinks a little, like a raid pull timer.
+local NUMBER_DIR = "Interface\\AddOns\\HoAAlerts\\Textures\\Countdown\\"
+local NUMBER_SIZE = 112
+local ZOOM_TIME, ZOOM_FROM = 0.18, 2.2
+
 local bigNumber = CreateFrame("Frame", "HoAAlertsCountdownNumber", warning)
-bigNumber:SetWidth(160)
-bigNumber:SetHeight(80)
-bigNumber:SetPoint("BOTTOM", warning, "TOP", 0, 6)
-bigNumber.text = bigNumber:CreateFontString(nil, "OVERLAY")
-bigNumber.text:SetFont("Fonts\\FRIZQT__.TTF", 64, "THICKOUTLINE")
-bigNumber.text:SetPoint("CENTER", bigNumber, "CENTER", 0, 0)
+bigNumber:SetWidth(NUMBER_SIZE)
+bigNumber:SetHeight(NUMBER_SIZE)
+bigNumber:SetPoint("BOTTOM", warning, "TOP", 0, 0)
+bigNumber:SetFrameStrata("HIGH")
+bigNumber.texture = bigNumber:CreateTexture(nil, "OVERLAY")
+bigNumber.texture:SetAllPoints(bigNumber)
 bigNumber:Hide()
+
+local function Ease(t)
+    return 1 - (1 - t) * (1 - t) * (1 - t)   -- fast start, soft landing
+end
+
 bigNumber:SetScript("OnUpdate", function()
     local age = GetTime() - this.at
     if age >= NUMBER_HOLD + NUMBER_FADE then
         this:Hide()
         return
     end
-    this:SetAlpha(age > NUMBER_HOLD and (1 - (age - NUMBER_HOLD) / NUMBER_FADE) or 1)
-    this:SetScale(age < 0.15 and (1 + (0.15 - age) * 2.5) or 1)   -- pop in
+    local scale, alpha
+    if age < ZOOM_TIME then
+        local t = Ease(age / ZOOM_TIME)
+        scale = ZOOM_FROM + (1 - ZOOM_FROM) * t
+        alpha = t
+    elseif age < NUMBER_HOLD then
+        scale, alpha = 1, 1
+    else
+        local t = (age - NUMBER_HOLD) / NUMBER_FADE
+        scale, alpha = 1 - 0.15 * t, 1 - t
+    end
+    -- scale the texture size, not the frame, so it grows around its center
+    this.texture:ClearAllPoints()
+    this.texture:SetPoint("CENTER", this, "CENTER", 0, 0)
+    this.texture:SetWidth(NUMBER_SIZE * scale)
+    this.texture:SetHeight(NUMBER_SIZE * scale)
+    this:SetAlpha(alpha)
 end)
 
 local function ShowNumber(n)
-    bigNumber.text:SetText(n)
-    -- last three in red, the rest in the boss orange
-    if n <= 3 then
-        bigNumber.text:SetTextColor(1, 0.15, 0.1)
-    else
-        bigNumber.text:SetTextColor(1, 0.55, 0.15)
-    end
+    bigNumber.texture:SetTexture(NUMBER_DIR .. n)
+    bigNumber.number = n
     bigNumber.at = GetTime()
-    bigNumber:SetAlpha(1)
+    bigNumber:SetAlpha(0)
     bigNumber:Show()
 end
 
